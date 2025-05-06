@@ -23,6 +23,7 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
+  "proxy": "https://secure.payu.in",
   "eslintConfig": {
     "extends": [
       "react-app",
