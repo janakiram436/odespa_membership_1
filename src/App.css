@@ -157,3 +157,40 @@ body {
   box-shadow: 0 8px 20px rgba(0,0,0,0.3);
   position: relative;
 }
+.card-carousel {
+  min-width: 280px;
+  flex: 0 0 auto;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  text-align: center;
+  border: 2px solid transparent;
+  background-color: #f8f3ed;
+  cursor: pointer;
+}
+
+.card-carousel:hover {
+  background-color: #e5d5b2; /* light hover gold */
+}
+
+.card-carousel.active {
+  background-color: #b69348; /* gold */
+  border-color: #b69348;
+  color: white;
+}
+
+.arrow-icon {
+  height: 44px;
+  width: 44px;
+  border-radius: 50%;
+  border: none;
+  font-size: 1.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 0.5rem;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
