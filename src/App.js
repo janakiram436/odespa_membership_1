@@ -126,6 +126,7 @@ const App = () => {
     const form = document.createElement('form');
     form.action = 'https://secure.payu.in/_payment';
     form.method = 'POST';
+    form.target = '_blank';
 
     for (const key in paymentData) {
       const input = document.createElement('input');
