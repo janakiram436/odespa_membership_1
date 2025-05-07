@@ -105,15 +105,15 @@ const App = () => {
     return SHA512(hashString).toString();
   };
 
-  const fetchPayment = () => {
+  const fetchPayment = (guestDetails) => {
     const paymentData = {
       key: '26sF13CI',
       txnid: 'TXN' + Math.random().toString(36).substring(7),
-      amount: '100',
-      productinfo: 'iPhone',
-      firstname: 'ram',
+      amount: guestDetails.price,
+      productinfo: guestDetails.membership,
+      firstname: guestDetails.firstName,
       email: '',
-      phone: '9182849325',
+      phone: phone,
       udf1: '', udf2: '', udf3: '', udf4: '', udf5: '',
       salt: '0Rd0lVQEvO',
       surl: 'https://test-payment-middleware.payu.in/simulatorResponse',
@@ -156,6 +156,7 @@ const App = () => {
           lastName: data.invoice.guest.last_name,
           phone: data.invoice.guest.mobile_phone,
           membership: data.invoice.invoice_items[0].name,
+          price:data.invoice.invoice_items[0].price.final,
         });
       }
     } catch (err) {
@@ -273,7 +274,7 @@ const App = () => {
                 key={m.id}
                 onClick={() => handleSelect(m)}
               >
-                <div className="price">INR {m.price.final.toLocaleString()}</div>
+                <div className="price">INR {m.price.sales.toLocaleString()}</div>
                 <div className="details">
                   <p>Discount on services - {m.discount_percentage || 50}%</p>
                   <p>Validity - {m.validity_in_months || 12} months</p>
@@ -301,9 +302,10 @@ const App = () => {
               <div className="user-details">
                 <h2>User Details</h2>
                 <p>Name: {guestInfo.firstName} {guestInfo.lastName}</p>
-                <p>Phone: {guestInfo.phone}</p>
+                <p>Phone: {guestInfo?.phone?.includes('+91') ? guestInfo.phone.replace('+91', '').trim() : guestInfo?.phone}</p>
                 <p>Selected Membership: {guestInfo.membership}</p>
-                <button onClick={fetchPayment}>Confirm</button>
+                <p>Final Price: {guestInfo.price} </p>
+                <button onClick={() => fetchPayment(guestInfo)}>Confirm</button>
               </div>
             ) : 'Verify Your Mobile'}</h3>
 
