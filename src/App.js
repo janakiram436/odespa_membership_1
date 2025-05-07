@@ -80,11 +80,11 @@ const App = () => {
       const formattedPhone = '+91' + phone;
       const confirmation = await signInWithPhoneNumber(auth, formattedPhone, window.recaptchaVerifier);
       setConfirmationResult(confirmation);
-      alert('OTP sent successfully');
+      //alert('OTP sent successfully');
       setStep(2);
     } catch (err) {
       console.error("Error in OTP sending", err);
-      alert('Failed to send OTP');
+      //alert('Failed to send OTP');
     }
   };
 
@@ -95,7 +95,7 @@ const App = () => {
       fetchGuestId();
     } catch (err) {
       console.error(err);
-      alert('Incorrect OTP');
+      //alert('Incorrect OTP');
     }
   };
 
@@ -183,14 +183,14 @@ const App = () => {
       const data = await response.json();
       if (data.success) {
         setInvoiceId(data.invoice_id);
-        alert(`Invoice created successfully with ID: ${data.invoice_id}`);
+        //alert(`Invoice created successfully with ID: ${data.invoice_id}`);
         fetchInvoiceDetails(data.invoice_id);
       } else {
-        alert('Invoice creation failed: ' + (data.error.message || 'Unknown error'));
+        //alert('Invoice creation failed: ' + (data.error.message || 'Unknown error'));
       }
     } catch (err) {
       console.error('Error creating invoice:', err);
-      alert('Invoice creation failed.');
+      //alert('Invoice creation failed.');
     }
   };
 
@@ -205,15 +205,15 @@ const App = () => {
       const guests = response.data.guests;
       if (guests.length > 0) {
         setGuestId(guests[0].id);
-        alert('Guest is present');
+        //alert('Guest is present');
         createInvoice(guests[0].id);
       } else {
         setShowGuestForm(true);
-        alert('You don\'t have an account. Please create one.');
+        //alert('You don\'t have an account. Please create one.');
       }
     } catch (err) {
       console.error(err);
-      alert('Failed to search guest.');
+      //alert('Failed to search guest.');
     }
   };
 
@@ -241,11 +241,11 @@ const App = () => {
 
       setGuestInfo(response.data);
       setGuestId(response.data.id);
-      alert('Guest created successfully!');
+      //alert('Guest created successfully!');
       createInvoice(response.data.id);
     } catch (err) {
       console.error(err);
-      alert('Guest creation failed.');
+      //alert('Guest creation failed.');
     }
   };
 
