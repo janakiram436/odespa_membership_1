@@ -43,8 +43,8 @@ const App = () => {
       udf4: '',
       udf5: '',
       salt: '0Rd0lVQEvO',  // Your salt value
-      surl: 'http://localhost:3000/payment-success',  // Success URL
-      furl: 'http://localhost:3000/payment-failure',  // Failure URL
+      surl: 'https://odespa-membership-1.vercel.app/payment-success',  // Success URL
+      furl: 'https://odespa-membership-1.vercel.app/payment-failure',  // Failure URL
     };
 
     const hash = generateHash(paymentData, paymentData.salt);
