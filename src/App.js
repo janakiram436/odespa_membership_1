@@ -29,8 +29,8 @@ const App = () => {
       udf5: '',
       salt: '0Rd0lVQEvO',
       // Redirect URLs after payment
-      surl: window.location.href,  // Redirect back to the same page for success
-      furl: window.location.href,  // Redirect back to the same page for failure
+      surl:"https://odespa-membership-1.vercel.app/",  // Redirect back to the same page for success
+      furl:"https://odespa-membership-1.vercel.app/",  // Redirect back to the same page for failure
     };
 
     // Generate the hash for the payment
