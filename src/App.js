@@ -127,7 +127,7 @@ const App = () => {
       udf1: '', udf2: '', udf3: '', udf4: '', udf5: '',
       salt: '0Rd0lVQEvO',
       surl: "http://localhost:5000/api/payu/success",
-      furl: '"http://localhost:5000/api/payu/failure"',
+      furl: "http://localhost:5000/api/payu/failure",
     };
 
 
