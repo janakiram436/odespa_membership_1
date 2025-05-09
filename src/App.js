@@ -119,7 +119,7 @@ const App = () => {
     const paymentData = {
       key: '26sF13CI',
       txnid: invoiceId, //'TXN' + Math.random().toString(36).substring(7),
-      amount: guestDetails.price,
+      amount: "1",//guestDetails.price,
       productinfo: guestDetails.membership,
       firstname: guestDetails.firstName,
       email: '',
