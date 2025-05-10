@@ -689,3 +689,81 @@ label {
   0% { opacity: 1; }
   100% { opacity: 0; }
 }
+
+/* Modern Payment Result Styles */
+.modern-payment-result-bg {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f8f3ed 0%, #eafaf1 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modern-payment-result-card {
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 8px 32px rgba(44, 62, 80, 0.12);
+  padding: 2.5rem 2rem 2rem 2rem;
+  max-width: 400px;
+  width: 100%;
+  text-align: center;
+  animation: fadeInUp 0.5s;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(40px);}
+  to { opacity: 1; transform: translateY(0);}
+}
+
+.modern-payment-result-icon {
+  margin-bottom: 1.2rem;
+}
+
+.success-text {
+  color: #4BB543;
+}
+
+.failure-text {
+  color: #ff4d4f;
+}
+
+.modern-payment-result-details {
+  margin: 1.5rem 0 1.5rem 0;
+  text-align: left;
+  font-size: 1.05rem;
+}
+
+.modern-payment-result-details div {
+  margin-bottom: 0.7rem;
+}
+
+.modern-payment-result-details span {
+  color: #888;
+  margin-right: 0.5rem;
+}
+
+.error-message {
+  color: #ff4d4f;
+  background: #fff0f0;
+  border-radius: 6px;
+  padding: 0.5rem 0.8rem;
+  margin-top: 0.7rem;
+  font-size: 0.98rem;
+}
+
+.modern-payment-result-btn {
+  background: linear-gradient(90deg, #b69348 0%, #eac97a 100%);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.8rem 2.2rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 1.2rem;
+  transition: background 0.2s;
+}
+
+.modern-payment-result-btn:hover {
+  background: linear-gradient(90deg, #a07c2c 0%, #d4b04a 100%);
+}
