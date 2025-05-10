@@ -1,12 +1,14 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { FiArrowLeft, FiArrowRight } from 'react-icons/fi';
 import '@fortawesome/fontawesome-free/css/all.min.css';
+import '@testing-library/jest-dom';
 import axios from 'axios';
 import './App.css';
 import { initializeApp } from 'firebase/app';
 import { getAuth, RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth';
 import { getAnalytics } from 'firebase/analytics';
-
+import SHA512 from 'crypto-js/sha512';
+//import { FiArrowLeft, FiArrowRight } from 'react-icons/fi'; 
 // Your Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyC14KBARTHpl2H63sFT9y9fBKBV9lA8fvM",
@@ -218,6 +220,52 @@ const App = () => {
     }
   };
 
+  const generateHash = (paymentData, salt) => {
+      const { key, txnid, amount, productinfo, firstname, email, phone, udf1 = '', udf2 = '', udf3 = '', udf4 = '', udf5 = '' } = paymentData;
+      const hashString = `${key}|${txnid}|${amount}|${productinfo}|${firstname}|${email}|${udf1}|${udf2}|${udf3}|${udf4}|${udf5}||||||${salt}`;
+      return SHA512(hashString).toString();
+    };
+  
+  
+    const fetchPayment = (guestDetails) => {
+      const paymentData = {
+        key: '26sF13CI',
+        txnid: invoiceId, //'TXN' + Math.random().toString(36).substring(7),
+        amount: "1",//guestDetails.price,
+        productinfo: guestDetails.membership,
+        firstname: guestDetails.firstName,
+        email: '',
+        phone: phone,
+        udf1: '', udf2: '', udf3: '', udf4: '', udf5: '',
+        salt: '0Rd0lVQEvO',
+        surl: "http://localhost:5000/api/payu/success",
+        furl: "http://localhost:5000/api/payu/failure",
+      };
+  
+  
+      const hash = generateHash(paymentData, paymentData.salt);
+      paymentData.hash = hash;
+  
+  
+      const form = document.createElement('form');
+      form.action = 'https://secure.payu.in/_payment';
+      form.method = 'POST';
+      form.target = '_blank';
+  
+  
+      for (const key in paymentData) {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = key;
+        input.value = paymentData[key];
+        form.appendChild(input);
+      }
+  
+  
+      document.body.appendChild(form);
+      form.submit();
+    };
+
   const fetchGuestId = async () => {
     try {
       const response = await axios.get(
@@ -346,6 +394,7 @@ const App = () => {
           lastName: data.invoice.guest.last_name,
           phone: data.invoice.guest.mobile_phone,
           membership: data.invoice.invoice_items[0].name,
+          price:data.invoice.invoice_items[0].price.final,
         });
         setShowOTPModal(true);
       }
@@ -464,8 +513,9 @@ const App = () => {
               <div className="modern-modal-row"><span>Name:</span> <strong>{guestInfo?.firstName} {guestInfo?.lastName}</strong></div>
               <div className="modern-modal-row"><span>Phone:</span> <strong>+91 {guestInfo?.phone}</strong></div>
               <div className="modern-modal-row"><span>Selected Membership:</span> <strong>{guestInfo?.membership}</strong></div>
+              <div className="modern-modal-row"><span>Total Price:</span> <strong>{guestInfo.price}</strong></div>
             </div>
-            <button className="modern-modal-confirm" onClick={() => alert('Confirmed')}>Confirm</button>
+            <button className="modern-modal-confirm" onClick={() => fetchPayment(guestInfo)}>Confirm</button>
           </div>
         </div>
       )}
