@@ -444,7 +444,26 @@ const App = () => {
         </div>
       )}
 
-      {showOTPModal && (step === 1 || (step === 2 && !otpVerified) || (otpVerified && showGuestForm && !guestInfo) || guestInfo) && (
+      {showOTPModal && guestInfo && (
+        <div className="modern-modal">
+          <div className="modern-modal-card animate-modal-in">
+            <span className="modern-modal-close" onClick={handleCloseModal}>&#10006;</span>
+            <div className="modern-modal-header">
+              <div className="modern-modal-check">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#4BB543" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" fill="#eafaf1"/><path d="M8 12l2 2l4-4"/></svg>
+              </div>
+              <h2>User Details</h2>
+            </div>
+            <div className="modern-modal-details">
+              <div className="modern-modal-row"><span>Name:</span> <strong>{guestInfo?.firstName} {guestInfo?.lastName}</strong></div>
+              <div className="modern-modal-row"><span>Phone:</span> <strong>+91 {guestInfo?.phone}</strong></div>
+              <div className="modern-modal-row"><span>Selected Membership:</span> <strong>{guestInfo?.membership}</strong></div>
+            </div>
+            <button className="modern-modal-confirm" onClick={() => alert('Confirmed')}>Confirm</button>
+          </div>
+        </div>
+      )}
+      {showOTPModal && !guestInfo && (step === 1 || (step === 2 && !otpVerified) || (otpVerified && showGuestForm && !guestInfo)) && (
         <div className="modern-modal">
           <div className="modern-modal-card animate-modal-in">
             <span className="modern-modal-close" onClick={handleCloseModal}>&#10006;</span>
@@ -543,22 +562,6 @@ const App = () => {
                   </div>
                 </div>
                 <button className="modern-modal-confirm" onClick={createGuest}>Submit</button>
-              </>
-            )}
-            {guestInfo && (
-              <>
-                <div className="modern-modal-header">
-                  <div className="modern-modal-check">
-                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#4BB543" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" fill="#eafaf1"/><path d="M8 12l2 2l4-4"/></svg>
-                  </div>
-                  <h2>User Details</h2>
-                </div>
-                <div className="modern-modal-details">
-                  <div className="modern-modal-row"><span>Name:</span> <strong>{guestInfo?.firstName} {guestInfo?.lastName}</strong></div>
-                  <div className="modern-modal-row"><span>Phone:</span> <strong>+91 {guestInfo?.phone}</strong></div>
-                  <div className="modern-modal-row"><span>Selected Membership:</span> <strong>{guestInfo?.membership}</strong></div>
-                </div>
-                <button className="modern-modal-confirm" onClick={() => alert('Confirmed')}>Confirm</button>
               </>
             )}
           </div>
