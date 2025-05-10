@@ -459,11 +459,11 @@ const App = () => {
                   />
                 </div>
                 <div className="modern-modal-actions">
-                  <button className="modern-modal-back" onClick={() => setStep(1)}>
-                    <span className="modern-modal-back-icon">
-                      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#b69348" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5l-5 5 5 5"/></svg>
-                    </span>
-                    Back
+                  <button className="modern-modal-back-icon-btn" onClick={() => setStep(1)} aria-label="Back">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="12" r="12" fill="#b69348"/>
+                      <path d="M14.5 7.5L10 12l4.5 4.5" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
                   </button>
                   <button className="modern-modal-confirm" onClick={verifyOtp}>Continue</button>
                 </div>
