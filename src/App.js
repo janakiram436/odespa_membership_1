@@ -354,6 +354,36 @@ const App = () => {
     }
   };
 
+  // Load guestInfo and showOTPModal from localStorage on mount
+  useEffect(() => {
+    const storedGuestInfo = localStorage.getItem('guestInfo');
+    const storedShowOTPModal = localStorage.getItem('showOTPModal');
+    if (storedGuestInfo) {
+      setGuestInfo(JSON.parse(storedGuestInfo));
+    }
+    if (storedShowOTPModal === 'true') {
+      setShowOTPModal(true);
+    }
+  }, []);
+
+  // Persist guestInfo and showOTPModal to localStorage when they change
+  useEffect(() => {
+    if (guestInfo) {
+      localStorage.setItem('guestInfo', JSON.stringify(guestInfo));
+    } else {
+      localStorage.removeItem('guestInfo');
+    }
+    localStorage.setItem('showOTPModal', showOTPModal ? 'true' : 'false');
+  }, [guestInfo, showOTPModal]);
+
+  // When cancel icon is clicked, close modal and clear guestInfo from localStorage
+  const handleCloseModal = () => {
+    setShowOTPModal(false);
+    setGuestInfo(null);
+    localStorage.removeItem('guestInfo');
+    localStorage.setItem('showOTPModal', 'false');
+  };
+
   return (
     <div className="membership-section">
       <h1 className="heading">Your Perfect Package Ode Spa Membership</h1>
@@ -417,7 +447,7 @@ const App = () => {
       {showOTPModal && (step === 1 || (step === 2 && !otpVerified) || (otpVerified && showGuestForm && !guestInfo) || guestInfo) && (
         <div className="modern-modal">
           <div className="modern-modal-card animate-modal-in">
-            <span className="modern-modal-close" onClick={() => setShowOTPModal(false)}>&#10006;</span>
+            <span className="modern-modal-close" onClick={handleCloseModal}>&#10006;</span>
             {step === 1 && (
               <>
                 <div className="modern-modal-header">
