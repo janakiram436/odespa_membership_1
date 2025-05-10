@@ -206,6 +206,12 @@ const App = () => {
       await confirmationResult.confirm(otp);
       setOtpVerified(true);
       fetchGuestId();
+      // If no guest form and no guestInfo, close modal after a short delay
+      setTimeout(() => {
+        if (!showGuestForm && !guestInfo) {
+          setShowOTPModal(false);
+        }
+      }, 500);
     } catch (err) {
       console.error(err);
       alert('Incorrect OTP');
@@ -407,7 +413,7 @@ const App = () => {
         </div>
       )}
 
-      {showOTPModal && (
+      {showOTPModal && (step === 1 || (step === 2 && !otpVerified) || (otpVerified && showGuestForm && !guestInfo) || guestInfo) && (
         <div className="modern-modal">
           <div className="modern-modal-card animate-modal-in">
             <span className="modern-modal-close" onClick={() => setShowOTPModal(false)}>&#10006;</span>
@@ -453,7 +459,12 @@ const App = () => {
                   />
                 </div>
                 <div className="modern-modal-actions">
-                  <button className="modern-modal-back" onClick={() => setStep(1)}>Back</button>
+                  <button className="modern-modal-back" onClick={() => setStep(1)}>
+                    <span className="modern-modal-back-icon">
+                      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#b69348" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5l-5 5 5 5"/></svg>
+                    </span>
+                    Back
+                  </button>
                   <button className="modern-modal-confirm" onClick={verifyOtp}>Continue</button>
                 </div>
               </>

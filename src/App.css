@@ -558,21 +558,33 @@ label {
 
 .modern-modal-back {
   flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
   padding: 0.9rem 0;
   background: #f8f3ed;
   color: #b69348;
   border: 1.5px solid #b69348;
-  border-radius: 6px;
+  border-radius: 999px;
   font-size: 1.08rem;
   font-weight: 600;
   letter-spacing: 1px;
   cursor: pointer;
-  transition: background 0.2s, color 0.2s, border 0.2s;
+  box-shadow: 0 2px 8px rgba(182, 147, 72, 0.08);
+  transition: background 0.2s, color 0.2s, border 0.2s, box-shadow 0.2s;
 }
 .modern-modal-back:hover {
   background: #fffbe6;
   color: #a07d32;
   border-color: #a07d32;
+  box-shadow: 0 4px 16px rgba(182, 147, 72, 0.13);
+}
+
+.modern-modal-back-icon {
+  display: flex;
+  align-items: center;
+  margin-right: 0.2rem;
 }
 
 @media (max-width: 480px) {
