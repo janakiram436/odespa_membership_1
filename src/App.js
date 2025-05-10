@@ -347,6 +347,7 @@ const App = () => {
           phone: data.invoice.guest.mobile_phone,
           membership: data.invoice.invoice_items[0].name,
         });
+        setShowOTPModal(true);
       }
     } catch (err) {
       console.error('Error fetching invoice details:', err);
