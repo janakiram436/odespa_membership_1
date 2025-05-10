@@ -408,76 +408,115 @@ const App = () => {
       )}
 
       {showOTPModal && (
-        <div className="otp-modal">
-          <div className="otp-box">
-            <span className="close-cross" onClick={() => setShowOTPModal(false)}>&#10006;</span>
-            <h3>{guestInfo ? (
-              <div className="user-details">
-                <h2>User Details</h2>
-                <p>Name: {guestInfo.firstName} {guestInfo.lastName}</p>
-                <p>Phone: {guestInfo.phone}</p>
-                <p>Selected Membership: {guestInfo.membership}</p>
-                <button onClick={() => alert('Confirmed')}>Confirm</button>
-              </div>
-            ) : 'Verify Your Mobile'}</h3>
-            {step === 1 && !guestInfo && (
+        <div className="modern-modal">
+          <div className="modern-modal-card animate-modal-in">
+            <span className="modern-modal-close" onClick={() => setShowOTPModal(false)}>&#10006;</span>
+            {step === 1 && (
               <>
-                <input
-                  type="tel"
-                  className="input"
-                  placeholder="Enter phone number"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                />
-                <button className="btn" onClick={sendOtp}>Continue</button>
+                <div className="modern-modal-header">
+                  <div className="modern-modal-check">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#b69348" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" fill="#f8f3ed"/><path d="M12 8v8M8 12h8"/></svg>
+                  </div>
+                  <h2>Enter Mobile Number</h2>
+                </div>
+                <div className="modern-modal-details">
+                  <input
+                    type="tel"
+                    className="modern-modal-input"
+                    placeholder="Enter phone number"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    maxLength={10}
+                    style={{marginBottom: '1.2rem'}}
+                  />
+                </div>
+                <button className="modern-modal-confirm" onClick={sendOtp}>Continue</button>
               </>
             )}
-            {step === 2 && !otpVerified && !guestInfo && (
+            {step === 2 && !otpVerified && (
               <>
-                <input
-                  type="text"
-                  className="input"
-                  placeholder="Enter OTP"
-                  value={otp}
-                  onChange={(e) => setOtp(e.target.value)}
-                />
-                <button className="btn" onClick={verifyOtp}>Verify OTP</button>
+                <div className="modern-modal-header">
+                  <div className="modern-modal-check">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#b69348" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" fill="#f8f3ed"/><path d="M12 8v8M8 12h8"/></svg>
+                  </div>
+                  <h2>OTP Verification</h2>
+                </div>
+                <div className="modern-modal-details">
+                  <input
+                    type="text"
+                    className="modern-modal-input"
+                    placeholder="Enter OTP"
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value)}
+                    maxLength={6}
+                    style={{marginBottom: '1.2rem'}}
+                  />
+                </div>
+                <div className="modern-modal-actions">
+                  <button className="modern-modal-back" onClick={() => setStep(1)}>Back</button>
+                  <button className="modern-modal-confirm" onClick={verifyOtp}>Continue</button>
+                </div>
               </>
             )}
             {otpVerified && showGuestForm && !guestInfo && (
               <>
-                <h4>No guest found. Please create an account.</h4>
-                <input
-                  className="input"
-                  placeholder="First Name"
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                />
-                <input
-                  className="input"
-                  placeholder="Last Name"
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                />
-                <div>
-                  <label>
-                    <input
-                      type="radio"
-                      name="gender"
-                      value={1}
-                      onChange={() => setGender(1)}
-                    /> Male
-                  </label>
-                  <label style={{ marginLeft: '1rem' }}>
-                    <input
-                      type="radio"
-                      name="gender"
-                      value={2}
-                      onChange={() => setGender(2)}
-                    /> Female
-                  </label>
+                <div className="modern-modal-header">
+                  <div className="modern-modal-check">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#b69348" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" fill="#f8f3ed"/><path d="M12 8v8M8 12h8"/></svg>
+                  </div>
+                  <h2>Create Account</h2>
                 </div>
-                <button className="btn" onClick={createGuest}>Submit</button>
+                <div className="modern-modal-details">
+                  <input
+                    className="modern-modal-input"
+                    placeholder="First Name"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                  />
+                  <input
+                    className="modern-modal-input"
+                    placeholder="Last Name"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                  />
+                  <div style={{marginBottom: '1.2rem'}}>
+                    <label style={{marginRight: '1.5rem'}}>
+                      <input
+                        type="radio"
+                        name="gender"
+                        value={1}
+                        checked={gender === 1}
+                        onChange={() => setGender(1)}
+                      /> Male
+                    </label>
+                    <label>
+                      <input
+                        type="radio"
+                        name="gender"
+                        value={2}
+                        checked={gender === 2}
+                        onChange={() => setGender(2)}
+                      /> Female
+                    </label>
+                  </div>
+                </div>
+                <button className="modern-modal-confirm" onClick={createGuest}>Submit</button>
+              </>
+            )}
+            {guestInfo && (
+              <>
+                <div className="modern-modal-header">
+                  <div className="modern-modal-check">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#4BB543" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" fill="#eafaf1"/><path d="M8 12l2 2l4-4"/></svg>
+                  </div>
+                  <h2>User Details</h2>
+                </div>
+                <div className="modern-modal-details">
+                  <div className="modern-modal-row"><span>Name:</span> <strong>{guestInfo?.firstName} {guestInfo?.lastName}</strong></div>
+                  <div className="modern-modal-row"><span>Phone:</span> <strong>+91 {guestInfo?.phone}</strong></div>
+                  <div className="modern-modal-row"><span>Selected Membership:</span> <strong>{guestInfo?.membership}</strong></div>
+                </div>
+                <button className="modern-modal-confirm" onClick={() => alert('Confirmed')}>Confirm</button>
               </>
             )}
           </div>
