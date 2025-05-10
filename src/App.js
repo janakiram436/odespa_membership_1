@@ -387,7 +387,13 @@ const App = () => {
   return (
     <div className="membership-section">
       <h1 className="heading">Your Perfect Package Ode Spa Membership</h1>
-      {loading ? <p>Loading...</p> : error ? <p>{error}</p> : (
+      {loading ? (
+        <div className="center-spinner">
+          <div className="lds-spinner">
+            <div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
+          </div>
+        </div>
+      ) : error ? <p>{error}</p> : (
         <div 
           className="carousel-container"
           onMouseEnter={() => setIsAutoScrolling(false)}
