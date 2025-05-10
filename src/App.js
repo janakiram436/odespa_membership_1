@@ -1,7 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { FiArrowLeft, FiArrowRight } from 'react-icons/fi';
 import '@fortawesome/fontawesome-free/css/all.min.css';
-import '@testing-library/jest-dom';
 import axios from 'axios';
 import './App.css';
 import { initializeApp } from 'firebase/app';
