@@ -187,7 +187,7 @@ const App = () => {
       const formattedPhone = '+91' + phone;
       const confirmation = await signInWithPhoneNumber(auth, formattedPhone, window.recaptchaVerifier);
       setConfirmationResult(confirmation);
-      alert('OTP sent successfully');
+      //alert('OTP sent successfully');
       setStep(2);
     } catch (err) {
       console.error("Error in OTP sending", err);
@@ -195,9 +195,9 @@ const App = () => {
         // Reset reCAPTCHA if it fails
         window.recaptchaVerifier = null;
         setupRecaptcha();
-        alert('Please try again. reCAPTCHA verification failed.');
+        //alert('Please try again. reCAPTCHA verification failed.');
       } else {
-        alert('Failed to send OTP. Please try again.');
+        //alert('Failed to send OTP. Please try again.');
       }
     }
   };
@@ -215,7 +215,7 @@ const App = () => {
       }, 500);
     } catch (err) {
       console.error(err);
-      alert('Incorrect OTP');
+      //alert('Incorrect OTP');
     }
   };
 
@@ -279,18 +279,18 @@ const App = () => {
       const guests = response.data.guests;
       if (guests.length > 0) {
         setGuestId(guests[0].id);
-        alert('Guest is present');
+        //alert('Guest is present');
         createInvoice(guests[0].id);
       } else {
         setShowGuestForm(true);
-        alert('You don\'t have an account. Please create one.');
+        //alert('You don\'t have an account. Please create one.');
       }
     } catch (err) {
       console.error('Error searching guest:', err);
       if (err.response?.status === 429) {
-        alert('Too many requests. Please try again in a few moments.');
+        //alert('Too many requests. Please try again in a few moments.');
       } else {
-        alert('Failed to search guest. Please try again.');
+        //alert('Failed to search guest. Please try again.');
       }
     }
   };
@@ -321,14 +321,14 @@ const App = () => {
       );
       setGuestInfo(response.data);
       setGuestId(response.data.id);
-      alert('Guest created successfully!');
+      //alert('Guest created successfully!');
       createInvoice(response.data.id);
     } catch (err) {
       console.error('Error creating guest:', err);
       if (err.response?.status === 429) {
-        alert('Too many requests. Please try again in a few moments.');
+        //alert('Too many requests. Please try again in a few moments.');
       } else {
-        alert('Guest creation failed. Please try again.');
+        //alert('Guest creation failed. Please try again.');
       }
     }
   };
@@ -358,17 +358,18 @@ const App = () => {
 
       if (data.success) {
         setInvoiceId(data.invoice_id);
-        alert(`Invoice created successfully with ID: ${data.invoice_id}`);
+        console.log(data.invoice_id)
+        //alert(`Invoice created successfully with ID: ${data.invoice_id}`);
         fetchInvoiceDetails(data.invoice_id);
       } else {
-        alert('Invoice creation failed: ' + (data.error.message || 'Unknown error'));
+        //alert('Invoice creation failed: ' + (data.error.message || 'Unknown error'));
       }
     } catch (err) {
       console.error('Error creating invoice:', err);
       if (err.message === 'RATE_LIMIT') {
-        alert('Too many requests. Please try again in a few moments.');
+        //alert('Too many requests. Please try again in a few moments.');
       } else {
-        alert('Invoice creation failed. Please try again.');
+        //alert('Invoice creation failed. Please try again.');
       }
     }
   };
