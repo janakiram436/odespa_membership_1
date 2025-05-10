@@ -566,7 +566,7 @@ const App = () => {
                 onClick={() => handleSelect(m)}
               >
                 <div>
-                  <h2>INR {m.price.final.toLocaleString()}</h2>
+                  <h2>INR {m.price.sales.toLocaleString()}</h2>
                 </div>
                 <div>
                   <p>
