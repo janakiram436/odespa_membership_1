@@ -7,6 +7,7 @@ import { initializeApp } from 'firebase/app';
 import { getAuth, RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth';
 import { getAnalytics } from 'firebase/analytics';
 import SHA512 from 'crypto-js/sha512';
+import Swal from 'sweetalert2';
 //import { FiArrowLeft, FiArrowRight } from 'react-icons/fi'; 
 // Your Firebase config
 const firebaseConfig = {
@@ -187,17 +188,37 @@ const App = () => {
       const formattedPhone = '+91' + phone;
       const confirmation = await signInWithPhoneNumber(auth, formattedPhone, window.recaptchaVerifier);
       setConfirmationResult(confirmation);
-      //alert('OTP sent successfully');
+      Swal.fire({
+        toast: true,
+        position: 'bottom-end',
+        icon: 'success',
+        title: 'OTP sent successfully',
+        showConfirmButton: false,
+        timer: 3000
+      });
       setStep(2);
     } catch (err) {
       console.error("Error in OTP sending", err);
       if (err.code === 'auth/captcha-check-failed') {
-        // Reset reCAPTCHA if it fails
         window.recaptchaVerifier = null;
         setupRecaptcha();
-        //alert('Please try again. reCAPTCHA verification failed.');
+        Swal.fire({
+          toast: true,
+          position: 'bottom-end',
+          icon: 'error',
+          title: 'Please try again. reCAPTCHA verification failed.',
+          showConfirmButton: false,
+          timer: 3000
+        });
       } else {
-        //alert('Failed to send OTP. Please try again.');
+        Swal.fire({
+          toast: true,
+          position: 'bottom-end',
+          icon: 'error',
+          title: 'Failed to send OTP. Please try again.',
+          showConfirmButton: false,
+          timer: 3000
+        });
       }
     }
   };
@@ -207,7 +228,6 @@ const App = () => {
       await confirmationResult.confirm(otp);
       setOtpVerified(true);
       fetchGuestId();
-      // If no guest form and no guestInfo, close modal after a short delay
       setTimeout(() => {
         if (!showGuestForm && !guestInfo) {
           setShowOTPModal(false);
@@ -215,7 +235,14 @@ const App = () => {
       }, 500);
     } catch (err) {
       console.error(err);
-      //alert('Incorrect OTP');
+      Swal.fire({
+        toast: true,
+        position: 'bottom-end',
+        icon: 'error',
+        title: 'Incorrect OTP',
+        showConfirmButton: false,
+        timer: 3000
+      });
     }
   };
 
@@ -279,18 +306,38 @@ const App = () => {
       const guests = response.data.guests;
       if (guests.length > 0) {
         setGuestId(guests[0].id);
-        //alert('Guest is present');
         createInvoice(guests[0].id);
       } else {
         setShowGuestForm(true);
-        //alert('You don\'t have an account. Please create one.');
+        Swal.fire({
+          toast: true,
+          position: 'bottom-end',
+          icon: 'info',
+          title: 'You don\'t have an account. Please create one.',
+          showConfirmButton: false,
+          timer: 3000
+        });
       }
     } catch (err) {
       console.error('Error searching guest:', err);
       if (err.response?.status === 429) {
-        //alert('Too many requests. Please try again in a few moments.');
+        Swal.fire({
+          toast: true,
+          position: 'bottom-end',
+          icon: 'error',
+          title: 'Too many requests. Please try again in a few moments.',
+          showConfirmButton: false,
+          timer: 3000
+        });
       } else {
-        //alert('Failed to search guest. Please try again.');
+        Swal.fire({
+          toast: true,
+          position: 'bottom-end',
+          icon: 'error',
+          title: 'Failed to search guest. Please try again.',
+          showConfirmButton: false,
+          timer: 3000
+        });
       }
     }
   };
@@ -321,14 +368,35 @@ const App = () => {
       );
       setGuestInfo(response.data);
       setGuestId(response.data.id);
-      //alert('Guest created successfully!');
+      Swal.fire({
+        toast: true,
+        position: 'bottom-end',
+        icon: 'success',
+        title: 'Guest created successfully!',
+        showConfirmButton: false,
+        timer: 3000
+      });
       createInvoice(response.data.id);
     } catch (err) {
       console.error('Error creating guest:', err);
       if (err.response?.status === 429) {
-        //alert('Too many requests. Please try again in a few moments.');
+        Swal.fire({
+          toast: true,
+          position: 'bottom-end',
+          icon: 'error',
+          title: 'Too many requests. Please try again in a few moments.',
+          showConfirmButton: false,
+          timer: 3000
+        });
       } else {
-        //alert('Guest creation failed. Please try again.');
+        Swal.fire({
+          toast: true,
+          position: 'bottom-end',
+          icon: 'error',
+          title: 'Guest creation failed. Please try again.',
+          showConfirmButton: false,
+          timer: 3000
+        });
       }
     }
   };
@@ -358,18 +426,46 @@ const App = () => {
 
       if (data.success) {
         setInvoiceId(data.invoice_id);
-        console.log(data.invoice_id)
-        //alert(`Invoice created successfully with ID: ${data.invoice_id}`);
+        console.log(data.invoice_id);
+        Swal.fire({
+          toast: true,
+          position: 'bottom-end',
+          icon: 'success',
+          title: `Invoice created successfully with ID: ${data.invoice_id}`,
+          showConfirmButton: false,
+          timer: 3000
+        });
         fetchInvoiceDetails(data.invoice_id);
       } else {
-        //alert('Invoice creation failed: ' + (data.error.message || 'Unknown error'));
+        Swal.fire({
+          toast: true,
+          position: 'bottom-end',
+          icon: 'error',
+          title: 'Invoice creation failed: ' + (data.error.message || 'Unknown error'),
+          showConfirmButton: false,
+          timer: 3000
+        });
       }
     } catch (err) {
       console.error('Error creating invoice:', err);
       if (err.message === 'RATE_LIMIT') {
-        //alert('Too many requests. Please try again in a few moments.');
+        Swal.fire({
+          toast: true,
+          position: 'bottom-end',
+          icon: 'error',
+          title: 'Too many requests. Please try again in a few moments.',
+          showConfirmButton: false,
+          timer: 3000
+        });
       } else {
-        //alert('Invoice creation failed. Please try again.');
+        Swal.fire({
+          toast: true,
+          position: 'bottom-end',
+          icon: 'error',
+          title: 'Invoice creation failed. Please try again.',
+          showConfirmButton: false,
+          timer: 3000
+        });
       }
     }
   };
