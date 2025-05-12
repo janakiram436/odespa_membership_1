@@ -26,54 +26,15 @@ const analytics = getAnalytics(app);
 
 // Configure reCAPTCHA
 const setupRecaptcha = () => {
-  return new Promise((resolve, reject) => {
-    try {
-      // First, remove the existing container if it exists
-      const existingContainer = document.getElementById('recaptcha-container');
-      if (existingContainer) {
-        existingContainer.remove();
-      }
-
-      // Create a new container
-      const container = document.createElement('div');
-      container.id = 'recaptcha-container';
-      container.style.cssText = 'position: fixed; bottom: 0; right: 0; z-index: -1; opacity: 0; pointer-events: none;';
-      document.body.appendChild(container);
-
-      // Clear any existing reCAPTCHA
-      if (window.recaptchaVerifier) {
-        window.recaptchaVerifier.clear();
-        window.recaptchaVerifier = null;
-      }
-
-      // Create new reCAPTCHA verifier
-      window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-        'size': 'invisible',
-        'callback': (response) => {
-          console.log('reCAPTCHA verified');
-          resolve(response);
-        },
-        'expired-callback': () => {
-          console.log('reCAPTCHA expired');
-          if (window.recaptchaVerifier) {
-            window.recaptchaVerifier.clear();
-            window.recaptchaVerifier = null;
-          }
-          reject(new Error('reCAPTCHA expired'));
-        }
-      });
-
-      // Render the reCAPTCHA
-      window.recaptchaVerifier.render().then(function(widgetId) {
-        window.recaptchaWidgetId = widgetId;
-        resolve(widgetId);
-      }).catch(function(error) {
-        console.error('reCAPTCHA render error:', error);
-        reject(error);
-      });
-    } catch (error) {
-      console.error('Error setting up reCAPTCHA:', error);
-      reject(error);
+  window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+    'size': 'invisible',
+    'callback': (response) => {
+      // reCAPTCHA solved, allow signInWithPhoneNumber.
+      console.log('reCAPTCHA verified');
+    },
+    'expired-callback': () => {
+      // Response expired. Ask user to solve reCAPTCHA again.
+      console.log('reCAPTCHA expired');
     }
   });
 };
@@ -104,48 +65,10 @@ const App = () => {
   const [paymentResult, setPaymentResult] = useState(null);
   const MAX_RETRIES = 3;
   const RETRY_DELAY = 2000; // 2 seconds
-  const [isRecaptchaReady, setIsRecaptchaReady] = useState(false);
-  const [isInitializing, setIsInitializing] = useState(false);
 
   // Initialize reCAPTCHA when component mounts
   useEffect(() => {
-    let mounted = true;
-
-    const initializeRecaptcha = async () => {
-      if (isInitializing) return;
-      
-      setIsInitializing(true);
-      try {
-        await setupRecaptcha();
-        if (mounted) {
-          setIsRecaptchaReady(true);
-        }
-      } catch (error) {
-        console.error('Failed to initialize reCAPTCHA:', error);
-        if (mounted) {
-          setIsRecaptchaReady(false);
-        }
-      } finally {
-        if (mounted) {
-          setIsInitializing(false);
-        }
-      }
-    };
-
-    initializeRecaptcha();
-
-    // Cleanup on unmount
-    return () => {
-      mounted = false;
-      if (window.recaptchaVerifier) {
-        window.recaptchaVerifier.clear();
-        window.recaptchaVerifier = null;
-      }
-      const container = document.getElementById('recaptcha-container');
-      if (container) {
-        container.remove();
-      }
-    };
+    setupRecaptcha();
   }, []);
 
   // Fetch memberships from Zenoti API with retry logic
@@ -258,78 +181,21 @@ const App = () => {
 
   const sendOtp = async () => {
     try {
-      if (!phone || phone.length !== 10) {
-        alert('Please enter a valid 10-digit phone number');
-        return;
-      }
-
-      if (!isRecaptchaReady) {
-        alert('Please wait while we set up verification...');
-        return;
-      }
-
-      if (isInitializing) {
-        alert('Please wait while we initialize verification...');
-        return;
-      }
-
-      setIsInitializing(true);
-      try {
-        await setupRecaptcha();
-      } catch (error) {
-        console.error('Failed to setup reCAPTCHA:', error);
-        alert('Failed to setup verification. Please try again.');
-        return;
-      } finally {
-        setIsInitializing(false);
+      if (!window.recaptchaVerifier) {
+        setupRecaptcha();
       }
 
       const formattedPhone = '+91' + phone;
-      const appVerifier = window.recaptchaVerifier;
-      
-      if (!appVerifier) {
-        throw new Error('reCAPTCHA not initialized');
-      }
-
-      const confirmation = await signInWithPhoneNumber(auth, formattedPhone, appVerifier);
+      const confirmation = await signInWithPhoneNumber(auth, formattedPhone, window.recaptchaVerifier);
       setConfirmationResult(confirmation);
       setStep(2);
-      
-      // Check if guest exists
-      const response = await axios.get(
-        `https://api.zenoti.com/v1/guests/search?phone=${phone}`,
-        {
-          headers: {
-            Authorization: 'apikey 061fb3b3f6974acc828ced31bef595cca3f57e5bc194496785492e2b70362283',
-            accept: 'application/json',
-          },
-        }
-      );
-      const guests = response.data.guests;
-      if (guests.length > 0) {
-        setGuestId(guests[0].id);
-        createInvoice(guests[0].id);
-      } else {
-        setShowGuestForm(true);
-      }
     } catch (err) {
       console.error("Error in OTP sending", err);
-      if (err.code === 'auth/invalid-app-credential') {
-        alert('Verification failed. Please try again.');
-      } else if (err.code === 'auth/too-many-requests') {
-        alert('Too many attempts. Please try again later.');
-      } else if (err.code === 'auth/quota-exceeded') {
-        alert('SMS quota exceeded. Please try again later.');
-      } else {
-        alert('Error sending OTP. Please try again.');
-      }
-      
-      // Reset reCAPTCHA on error
-      if (window.recaptchaVerifier) {
-        window.recaptchaVerifier.clear();
+      if (err.code === 'auth/captcha-check-failed') {
+        // Reset reCAPTCHA if it fails
         window.recaptchaVerifier = null;
+        setupRecaptcha();
       }
-      setIsRecaptchaReady(false);
     }
   };
 
@@ -378,8 +244,8 @@ const App = () => {
         phone: phone,
         udf1: '', udf2: '', udf3: '', udf4: '', udf5: '',
         salt: '0Rd0lVQEvO',
-        surl: "https://odespa-backend1.onrender.com/api/payu/success",
-        furl: "https://odespa-backend1.onrender.com/api/payu/failure",
+        surl: "http://localhost:5000/api/payu/success",
+        furl: "http://localhost:5000/api/payu/failure",
       };
   
   
@@ -860,6 +726,7 @@ const App = () => {
           </div>
         </div>
       )}
+      <div id="recaptcha-container"></div>
     </div>
   );
 };
