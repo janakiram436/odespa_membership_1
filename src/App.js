@@ -206,13 +206,23 @@ const App = () => {
     try {
       await confirmationResult.confirm(otp);
       setOtpVerified(true);
-      fetchGuestId();
-      // If no guest form and no guestInfo, close modal after a short delay
-      setTimeout(() => {
-        if (!showGuestForm && !guestInfo) {
-          setShowOTPModal(false);
+      // After OTP verification, check if guest exists
+      const response = await axios.get(
+        `https://api.zenoti.com/v1/guests/search?phone=${phone}`,
+        {
+          headers: {
+            Authorization: 'apikey 061fb3b3f6974acc828ced31bef595cca3f57e5bc194496785492e2b70362283',
+            accept: 'application/json',
+          },
         }
-      }, 500);
+      );
+      const guests = response.data.guests;
+      if (guests.length > 0) {
+        setGuestId(guests[0].id);
+        createInvoice(guests[0].id);
+      } else {
+        setShowGuestForm(true);
+      }
     } catch (err) {
       console.error(err);
       //alert('Incorrect OTP');
