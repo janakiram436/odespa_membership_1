@@ -344,7 +344,7 @@ const App = () => {
     try {
       const payload = {
         center_id: "92d41019-c790-4668-9158-a693e531c1a4",
-        membership_ids: membershipId,
+        membership_ids: [membershipId],
         user_id: guestId,
       };
 
