@@ -420,12 +420,16 @@ label {
   border-radius: 18px;
   box-shadow: 0 8px 32px rgba(0,0,0,0.18);
   padding: 2.5rem 2rem 2rem 2rem;
-  min-width: 340px;
+  min-width: 320px;
   max-width: 95vw;
   width: 100%;
   max-width: 420px;
   position: relative;
   animation: modalIn 0.35s cubic-bezier(.4,1.4,.6,1) both;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 2rem;
 }
 
 @keyframes modalIn {
@@ -436,8 +440,10 @@ label {
 .modern-modal-header {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
+  justify-content: center;
+  width: 100%;
+  gap: 0.5rem;
+  margin-bottom: 1.2rem;
 }
 
 .modern-modal-check {
@@ -453,13 +459,16 @@ label {
 
 .modern-modal-header h2 {
   font-size: 1.35rem;
-  font-weight: 600;
+  font-weight: 700;
   color: #222;
   margin: 0;
+  text-align: center;
+  width: 100%;
 }
 
 .modern-modal-details {
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
+  width: 100%;
 }
 
 .modern-modal-row {
@@ -487,13 +496,14 @@ label {
   background: linear-gradient(90deg, #b69348 60%, #d4af37 100%);
   color: #fff;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 1.08rem;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 1px;
   cursor: pointer;
   box-shadow: 0 2px 8px rgba(182, 147, 72, 0.08);
   transition: background 0.2s, transform 0.2s;
+  margin-top: 0.5rem;
 }
 
 .modern-modal-confirm:hover {
@@ -518,17 +528,52 @@ label {
   color: #b69348;
 }
 
-@media (max-width: 480px) {
+@media (max-width: 768px) {
   .modern-modal-card {
-    padding: 1.2rem 0.7rem 1.2rem 0.7rem;
+    padding: 1.5rem 0.8rem 1.5rem 0.8rem;
     min-width: 0;
-    max-width: 98vw;
+    max-width: 95vw;
+    margin: 1.5rem;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.18);
   }
   .modern-modal-header h2 {
-    font-size: 1.1rem;
+    font-size: 1.15rem;
   }
   .modern-modal-row {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .membership-section {
+    position: static;
+  }
+  .modern-modal-card {
+    padding: 1.2rem 1rem 1.2rem 1rem;
+    min-width: 0;
+    max-width: 88vw;
+    margin: 2.5rem 1.5rem 1.2rem 1.5rem;
+    border-radius: 14px;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.18);
+  }
+  .modern-modal-header h2 {
+    font-size: 1rem;
+  }
+  .modern-modal-row {
+    font-size: 0.95rem;
+  }
+  .modern-modal-input {
+    padding: 0.7rem 0.9rem;
     font-size: 0.98rem;
+    border-radius: 7px;
+    margin-bottom: 0.5rem;
+  }
+  .modern-modal-confirm {
+    padding: 0.7rem 0;
+    font-size: 1rem;
+    border-radius: 7px;
+    margin-top: 0.5rem;
   }
 }
 
@@ -537,11 +582,12 @@ label {
   width: 100%;
   padding: 0.85rem 1rem;
   border: 1.5px solid #e0e0e0;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 1.08rem;
   margin-bottom: 0.7rem;
   background: #f8f3ed;
   transition: border 0.2s;
+  box-sizing: border-box;
 }
 .modern-modal-input:focus {
   outline: none;

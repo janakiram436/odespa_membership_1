@@ -7,7 +7,6 @@ import { initializeApp } from 'firebase/app';
 import { getAuth, RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth';
 import { getAnalytics } from 'firebase/analytics';
 import SHA512 from 'crypto-js/sha512';
-import Swal from 'sweetalert2';
 //import { FiArrowLeft, FiArrowRight } from 'react-icons/fi'; 
 // Your Firebase config
 const firebaseConfig = {
@@ -188,37 +187,17 @@ const App = () => {
       const formattedPhone = '+91' + phone;
       const confirmation = await signInWithPhoneNumber(auth, formattedPhone, window.recaptchaVerifier);
       setConfirmationResult(confirmation);
-      Swal.fire({
-        toast: true,
-        position: 'bottom-end',
-        icon: 'success',
-        title: 'OTP sent successfully',
-        showConfirmButton: false,
-        timer: 3000
-      });
+      //alert('OTP sent successfully');
       setStep(2);
     } catch (err) {
       console.error("Error in OTP sending", err);
       if (err.code === 'auth/captcha-check-failed') {
+        // Reset reCAPTCHA if it fails
         window.recaptchaVerifier = null;
         setupRecaptcha();
-        Swal.fire({
-          toast: true,
-          position: 'bottom-end',
-          icon: 'error',
-          title: 'Please try again. reCAPTCHA verification failed.',
-          showConfirmButton: false,
-          timer: 3000
-        });
+        //alert('Please try again. reCAPTCHA verification failed.');
       } else {
-        Swal.fire({
-          toast: true,
-          position: 'bottom-end',
-          icon: 'error',
-          title: 'Failed to send OTP. Please try again.',
-          showConfirmButton: false,
-          timer: 3000
-        });
+        //alert('Failed to send OTP. Please try again.');
       }
     }
   };
@@ -228,6 +207,7 @@ const App = () => {
       await confirmationResult.confirm(otp);
       setOtpVerified(true);
       fetchGuestId();
+      // If no guest form and no guestInfo, close modal after a short delay
       setTimeout(() => {
         if (!showGuestForm && !guestInfo) {
           setShowOTPModal(false);
@@ -235,14 +215,7 @@ const App = () => {
       }, 500);
     } catch (err) {
       console.error(err);
-      Swal.fire({
-        toast: true,
-        position: 'bottom-end',
-        icon: 'error',
-        title: 'Incorrect OTP',
-        showConfirmButton: false,
-        timer: 3000
-      });
+      //alert('Incorrect OTP');
     }
   };
 
@@ -264,8 +237,8 @@ const App = () => {
         phone: phone,
         udf1: '', udf2: '', udf3: '', udf4: '', udf5: '',
         salt: '0Rd0lVQEvO',
-        surl: "http://localhost:5000/api/payu/success",
-        furl: "http://localhost:5000/api/payu/failure",
+        surl: "https://odespa-backend1.onrender.com/api/payu/success",
+        furl: "https://odespa-backend1.onrender.com/api/payu/failure",
       };
   
   
@@ -306,38 +279,18 @@ const App = () => {
       const guests = response.data.guests;
       if (guests.length > 0) {
         setGuestId(guests[0].id);
+        //alert('Guest is present');
         createInvoice(guests[0].id);
       } else {
         setShowGuestForm(true);
-        Swal.fire({
-          toast: true,
-          position: 'bottom-end',
-          icon: 'info',
-          title: 'You don\'t have an account. Please create one.',
-          showConfirmButton: false,
-          timer: 3000
-        });
+        //alert('You don\'t have an account. Please create one.');
       }
     } catch (err) {
       console.error('Error searching guest:', err);
       if (err.response?.status === 429) {
-        Swal.fire({
-          toast: true,
-          position: 'bottom-end',
-          icon: 'error',
-          title: 'Too many requests. Please try again in a few moments.',
-          showConfirmButton: false,
-          timer: 3000
-        });
+        //alert('Too many requests. Please try again in a few moments.');
       } else {
-        Swal.fire({
-          toast: true,
-          position: 'bottom-end',
-          icon: 'error',
-          title: 'Failed to search guest. Please try again.',
-          showConfirmButton: false,
-          timer: 3000
-        });
+        //alert('Failed to search guest. Please try again.');
       }
     }
   };
@@ -368,35 +321,14 @@ const App = () => {
       );
       setGuestInfo(response.data);
       setGuestId(response.data.id);
-      Swal.fire({
-        toast: true,
-        position: 'bottom-end',
-        icon: 'success',
-        title: 'Guest created successfully!',
-        showConfirmButton: false,
-        timer: 3000
-      });
+      //alert('Guest created successfully!');
       createInvoice(response.data.id);
     } catch (err) {
       console.error('Error creating guest:', err);
       if (err.response?.status === 429) {
-        Swal.fire({
-          toast: true,
-          position: 'bottom-end',
-          icon: 'error',
-          title: 'Too many requests. Please try again in a few moments.',
-          showConfirmButton: false,
-          timer: 3000
-        });
+        //alert('Too many requests. Please try again in a few moments.');
       } else {
-        Swal.fire({
-          toast: true,
-          position: 'bottom-end',
-          icon: 'error',
-          title: 'Guest creation failed. Please try again.',
-          showConfirmButton: false,
-          timer: 3000
-        });
+        //alert('Guest creation failed. Please try again.');
       }
     }
   };
@@ -426,46 +358,18 @@ const App = () => {
 
       if (data.success) {
         setInvoiceId(data.invoice_id);
-        console.log(data.invoice_id);
-        Swal.fire({
-          toast: true,
-          position: 'bottom-end',
-          icon: 'success',
-          title: `Invoice created successfully with ID: ${data.invoice_id}`,
-          showConfirmButton: false,
-          timer: 3000
-        });
+        console.log(data.invoice_id)
+        //alert(`Invoice created successfully with ID: ${data.invoice_id}`);
         fetchInvoiceDetails(data.invoice_id);
       } else {
-        Swal.fire({
-          toast: true,
-          position: 'bottom-end',
-          icon: 'error',
-          title: 'Invoice creation failed: ' + (data.error.message || 'Unknown error'),
-          showConfirmButton: false,
-          timer: 3000
-        });
+        //alert('Invoice creation failed: ' + (data.error.message || 'Unknown error'));
       }
     } catch (err) {
       console.error('Error creating invoice:', err);
       if (err.message === 'RATE_LIMIT') {
-        Swal.fire({
-          toast: true,
-          position: 'bottom-end',
-          icon: 'error',
-          title: 'Too many requests. Please try again in a few moments.',
-          showConfirmButton: false,
-          timer: 3000
-        });
+        //alert('Too many requests. Please try again in a few moments.');
       } else {
-        Swal.fire({
-          toast: true,
-          position: 'bottom-end',
-          icon: 'error',
-          title: 'Invoice creation failed. Please try again.',
-          showConfirmButton: false,
-          timer: 3000
-        });
+        //alert('Invoice creation failed. Please try again.');
       }
     }
   };
@@ -577,7 +481,7 @@ const App = () => {
                 </div>
                 <div>
                   <button className="select-location">
-                    Take a Membership
+                    Take Membership
                   </button>
                 </div>
               </div>
@@ -622,9 +526,6 @@ const App = () => {
             {step === 1 && (
               <>
                 <div className="modern-modal-header">
-                  <div className="modern-modal-check">
-                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#b69348" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" fill="#f8f3ed"/><path d="M12 8v8M8 12h8"/></svg>
-                  </div>
                   <h2>Enter Mobile Number</h2>
                 </div>
                 <div className="modern-modal-details">
@@ -644,9 +545,6 @@ const App = () => {
             {step === 2 && !otpVerified && (
               <>
                 <div className="modern-modal-header">
-                  <div className="modern-modal-check">
-                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#b69348" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" fill="#f8f3ed"/><path d="M12 8v8M8 12h8"/></svg>
-                  </div>
                   <h2>OTP Verification</h2>
                 </div>
                 <div className="modern-modal-details">
@@ -674,9 +572,6 @@ const App = () => {
             {otpVerified && showGuestForm && !guestInfo && (
               <>
                 <div className="modern-modal-header">
-                  <div className="modern-modal-check">
-                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#b69348" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" fill="#f8f3ed"/><path d="M12 8v8M8 12h8"/></svg>
-                  </div>
                   <h2>Create Account</h2>
                 </div>
                 <div className="modern-modal-details">
