@@ -417,9 +417,9 @@ label {
 
 .modern-modal-card {
   background: #fff;
-  border-radius: 18px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
-  padding: 2.5rem 2rem 2rem 2rem;
+  border-radius: 22px;
+  box-shadow: 0 8px 32px rgba(44, 62, 80, 0.18), 0 2px 8px rgba(182, 147, 72, 0.08);
+  padding: 2.5rem 1.5rem 2rem 1.5rem;
   min-width: 320px;
   max-width: 95vw;
   width: 100%;
@@ -440,10 +440,11 @@ label {
 .modern-modal-header {
   display: flex;
   align-items: center;
-  justify-content: center;
   width: 100%;
-  gap: 0.5rem;
+  gap: 0.7rem;
   margin-bottom: 1.2rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #f0e8d9;
 }
 
 .modern-modal-check {
@@ -458,12 +459,12 @@ label {
 }
 
 .modern-modal-header h2 {
-  font-size: 1.35rem;
+  font-size: 1.25rem;
   font-weight: 700;
   color: #222;
   margin: 0;
+  flex: 1;
   text-align: center;
-  width: 100%;
 }
 
 .modern-modal-details {
@@ -550,7 +551,7 @@ label {
     position: static;
   }
   .modern-modal-card {
-    padding: 1.2rem 1rem 1.2rem 1rem;
+    padding: 1.2rem 0.7rem 1.2rem 0.7rem;
     min-width: 0;
     max-width: 88vw;
     margin: 2.5rem 1.5rem 1.2rem 1.5rem;
@@ -558,7 +559,7 @@ label {
     box-shadow: 0 2px 16px rgba(0,0,0,0.18);
   }
   .modern-modal-header h2 {
-    font-size: 1rem;
+    font-size: 1.05rem;
   }
   .modern-modal-row {
     font-size: 0.95rem;
@@ -574,6 +575,11 @@ label {
     font-size: 1rem;
     border-radius: 7px;
     margin-top: 0.5rem;
+  }
+  .wide-btn {
+    font-size: 1rem;
+    padding: 0.85rem 0;
+    border-radius: 8px;
   }
 }
 
@@ -633,58 +639,27 @@ label {
   margin-right: 0.2rem;
 }
 
-@media (max-width: 480px) {
-  .modern-modal-actions {
-    flex-direction: column;
-    gap: 0.7rem;
-  }
-  .modern-modal-back, .modern-modal-confirm {
-    font-size: 1rem;
-    padding: 0.8rem 0;
-  }
-}
-
-/* Modern Modal Back Icon Button */
 .modern-modal-back-icon-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
-  min-width: 44px;
-  min-height: 44px;
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+  min-height: 38px;
   border-radius: 50%;
-  background: none;
-  border: none;
-  box-shadow: 0 2px 8px rgba(182, 147, 72, 0.13);
+  background: #f8f3ed;
+  border: 1.5px solid #e0e0e0;
   cursor: pointer;
-  transition: box-shadow 0.2s, transform 0.2s;
+  transition: box-shadow 0.2s, transform 0.2s, background 0.2s;
   margin-right: 0.5rem;
   padding: 0;
 }
-.modern-modal-back-icon-btn svg {
-  display: block;
-}
 .modern-modal-back-icon-btn:focus,
 .modern-modal-back-icon-btn:hover {
-  box-shadow: 0 4px 16px rgba(182, 147, 72, 0.22);
-  transform: scale(1.08);
+  box-shadow: 0 4px 16px rgba(182, 147, 72, 0.13);
+  background: #f3e6c4;
   outline: none;
-}
-
-@media (max-width: 480px) {
-  .modern-modal-actions {
-    flex-direction: column;
-    gap: 0.7rem;
-  }
-  .modern-modal-back-icon-btn {
-    margin-right: 0;
-    margin-bottom: 0.5rem;
-    width: 40px;
-    height: 40px;
-    min-width: 40px;
-    min-height: 40px;
-  }
 }
 
 /* Centered Spinner Styles */
@@ -930,4 +905,15 @@ label {
   color: #333;
   font-size: 1.5rem;
   margin: 0;
+}
+
+/* Make Continue button full width in OTP modal */
+.wide-btn {
+  width: 100%;
+  max-width: 320px;
+  display: block;
+  margin: 0 auto;
+  font-size: 1.12rem;
+  padding: 1rem 0;
+  border-radius: 10px;
 }

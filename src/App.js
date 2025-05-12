@@ -544,8 +544,14 @@ const App = () => {
             )}
             {step === 2 && !otpVerified && (
               <>
-                <div className="modern-modal-header">
-                  <h2>OTP Verification</h2>
+                <div className="modern-modal-header" style={{justifyContent: 'flex-start', gap: '0.7rem'}}>
+                  <button className="modern-modal-back-icon-btn" onClick={() => setStep(1)} aria-label="Back" style={{margin: 0}}>
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#b69348" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="12" r="12" fill="#f8f3ed"/>
+                      <path d="M14.5 7.5L10 12l4.5 4.5" stroke="#b69348" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </button>
+                  <h2 style={{flex: 1, textAlign: 'center', margin: 0}}>OTP Verification</h2>
                 </div>
                 <div className="modern-modal-details">
                   <input
@@ -558,14 +564,8 @@ const App = () => {
                     style={{marginBottom: '1.2rem'}}
                   />
                 </div>
-                <div className="modern-modal-actions">
-                  <button className="modern-modal-back-icon-btn" onClick={() => setStep(1)} aria-label="Back">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <circle cx="12" cy="12" r="12" fill="#b69348"/>
-                      <path d="M14.5 7.5L10 12l4.5 4.5" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                  </button>
-                  <button className="modern-modal-confirm" onClick={verifyOtp} disabled={otp.length !== 6}>Continue</button>
+                <div className="modern-modal-actions" style={{justifyContent: 'center'}}>
+                  <button className="modern-modal-confirm wide-btn" onClick={verifyOtp} disabled={otp.length !== 6}>Continue</button>
                 </div>
               </>
             )}
