@@ -28,13 +28,25 @@ const analytics = getAnalytics(app);
 const setupRecaptcha = () => {
   return new Promise((resolve, reject) => {
     try {
+      // First, remove the existing container if it exists
+      const existingContainer = document.getElementById('recaptcha-container');
+      if (existingContainer) {
+        existingContainer.remove();
+      }
+
+      // Create a new container
+      const container = document.createElement('div');
+      container.id = 'recaptcha-container';
+      container.style.cssText = 'position: fixed; bottom: 0; right: 0; z-index: -1; opacity: 0; pointer-events: none;';
+      document.body.appendChild(container);
+
       // Clear any existing reCAPTCHA
       if (window.recaptchaVerifier) {
         window.recaptchaVerifier.clear();
         window.recaptchaVerifier = null;
       }
 
-      // Create new reCAPTCHA verifier with explicit render
+      // Create new reCAPTCHA verifier
       window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
         'size': 'invisible',
         'callback': (response) => {
@@ -51,7 +63,7 @@ const setupRecaptcha = () => {
         }
       });
 
-      // Explicitly render the reCAPTCHA
+      // Render the reCAPTCHA
       window.recaptchaVerifier.render().then(function(widgetId) {
         window.recaptchaWidgetId = widgetId;
         resolve(widgetId);
@@ -93,12 +105,16 @@ const App = () => {
   const MAX_RETRIES = 3;
   const RETRY_DELAY = 2000; // 2 seconds
   const [isRecaptchaReady, setIsRecaptchaReady] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(false);
 
   // Initialize reCAPTCHA when component mounts
   useEffect(() => {
     let mounted = true;
 
     const initializeRecaptcha = async () => {
+      if (isInitializing) return;
+      
+      setIsInitializing(true);
       try {
         await setupRecaptcha();
         if (mounted) {
@@ -108,6 +124,10 @@ const App = () => {
         console.error('Failed to initialize reCAPTCHA:', error);
         if (mounted) {
           setIsRecaptchaReady(false);
+        }
+      } finally {
+        if (mounted) {
+          setIsInitializing(false);
         }
       }
     };
@@ -120,6 +140,10 @@ const App = () => {
       if (window.recaptchaVerifier) {
         window.recaptchaVerifier.clear();
         window.recaptchaVerifier = null;
+      }
+      const container = document.getElementById('recaptcha-container');
+      if (container) {
+        container.remove();
       }
     };
   }, []);
@@ -244,13 +268,20 @@ const App = () => {
         return;
       }
 
-      // Reset and setup new reCAPTCHA
+      if (isInitializing) {
+        alert('Please wait while we initialize verification...');
+        return;
+      }
+
+      setIsInitializing(true);
       try {
         await setupRecaptcha();
       } catch (error) {
         console.error('Failed to setup reCAPTCHA:', error);
         alert('Failed to setup verification. Please try again.');
         return;
+      } finally {
+        setIsInitializing(false);
       }
 
       const formattedPhone = '+91' + phone;
@@ -829,14 +860,6 @@ const App = () => {
           </div>
         </div>
       )}
-      <div id="recaptcha-container" style={{ 
-        position: 'fixed', 
-        bottom: 0, 
-        right: 0, 
-        zIndex: -1, 
-        opacity: 0,
-        pointerEvents: 'none'
-      }}></div>
     </div>
   );
 };
