@@ -26,15 +26,39 @@ const analytics = getAnalytics(app);
 
 // Configure reCAPTCHA
 const setupRecaptcha = () => {
-  window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-    'size': 'invisible',
-    'callback': (response) => {
-      // reCAPTCHA solved, allow signInWithPhoneNumber.
-      console.log('reCAPTCHA verified');
-    },
-    'expired-callback': () => {
-      // Response expired. Ask user to solve reCAPTCHA again.
-      console.log('reCAPTCHA expired');
+  return new Promise((resolve, reject) => {
+    try {
+      // Clear any existing reCAPTCHA
+      if (window.recaptchaVerifier) {
+        window.recaptchaVerifier.clear();
+        window.recaptchaVerifier = null;
+      }
+
+      // Create new reCAPTCHA verifier
+      window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+        'size': 'invisible',
+        'callback': (response) => {
+          console.log('reCAPTCHA verified');
+          resolve(response);
+        },
+        'expired-callback': () => {
+          console.log('reCAPTCHA expired');
+          if (window.recaptchaVerifier) {
+            window.recaptchaVerifier.clear();
+            window.recaptchaVerifier = null;
+          }
+          reject(new Error('reCAPTCHA expired'));
+        }
+      });
+
+      // Render the reCAPTCHA
+      window.recaptchaVerifier.render().then(function(widgetId) {
+        window.recaptchaWidgetId = widgetId;
+        resolve(widgetId);
+      });
+    } catch (error) {
+      console.error('Error setting up reCAPTCHA:', error);
+      reject(error);
     }
   });
 };
@@ -62,12 +86,28 @@ const App = () => {
   const [membershipId, setMembershipId] = useState(null);
   const [invoiceId, setInvoiceId] = useState(null);
   const [retryCount, setRetryCount] = useState(0);
+  const [paymentResult, setPaymentResult] = useState(null);
   const MAX_RETRIES = 3;
   const RETRY_DELAY = 2000; // 2 seconds
 
   // Initialize reCAPTCHA when component mounts
   useEffect(() => {
-    setupRecaptcha();
+    const initializeRecaptcha = async () => {
+      try {
+        await setupRecaptcha();
+      } catch (error) {
+        console.error('Failed to initialize reCAPTCHA:', error);
+      }
+    };
+    initializeRecaptcha();
+
+    // Cleanup on unmount
+    return () => {
+      if (window.recaptchaVerifier) {
+        window.recaptchaVerifier.clear();
+        window.recaptchaVerifier = null;
+      }
+    };
   }, []);
 
   // Fetch memberships from Zenoti API with retry logic
@@ -180,24 +220,64 @@ const App = () => {
 
   const sendOtp = async () => {
     try {
-      if (!window.recaptchaVerifier) {
-        setupRecaptcha();
+      if (!phone || phone.length !== 10) {
+        alert('Please enter a valid 10-digit phone number');
+        return;
+      }
+
+      // Reset and setup new reCAPTCHA
+      try {
+        await setupRecaptcha();
+      } catch (error) {
+        console.error('Failed to setup reCAPTCHA:', error);
+        alert('Failed to setup verification. Please try again.');
+        return;
       }
 
       const formattedPhone = '+91' + phone;
-      const confirmation = await signInWithPhoneNumber(auth, formattedPhone, window.recaptchaVerifier);
+      const appVerifier = window.recaptchaVerifier;
+      
+      if (!appVerifier) {
+        throw new Error('reCAPTCHA not initialized');
+      }
+
+      const confirmation = await signInWithPhoneNumber(auth, formattedPhone, appVerifier);
       setConfirmationResult(confirmation);
-      //alert('OTP sent successfully');
       setStep(2);
+      
+      // Check if guest exists
+      const response = await axios.get(
+        `https://api.zenoti.com/v1/guests/search?phone=${phone}`,
+        {
+          headers: {
+            Authorization: 'apikey 061fb3b3f6974acc828ced31bef595cca3f57e5bc194496785492e2b70362283',
+            accept: 'application/json',
+          },
+        }
+      );
+      const guests = response.data.guests;
+      if (guests.length > 0) {
+        setGuestId(guests[0].id);
+        createInvoice(guests[0].id);
+      } else {
+        setShowGuestForm(true);
+      }
     } catch (err) {
       console.error("Error in OTP sending", err);
-      if (err.code === 'auth/captcha-check-failed') {
-        // Reset reCAPTCHA if it fails
-        window.recaptchaVerifier = null;
-        setupRecaptcha();
-        //alert('Please try again. reCAPTCHA verification failed.');
+      if (err.code === 'auth/invalid-app-credential') {
+        alert('Verification failed. Please try again.');
+      } else if (err.code === 'auth/too-many-requests') {
+        alert('Too many attempts. Please try again later.');
+      } else if (err.code === 'auth/quota-exceeded') {
+        alert('SMS quota exceeded. Please try again later.');
       } else {
-        //alert('Failed to send OTP. Please try again.');
+        alert('Error sending OTP. Please try again.');
+      }
+      
+      // Reset reCAPTCHA on error
+      if (window.recaptchaVerifier) {
+        window.recaptchaVerifier.clear();
+        window.recaptchaVerifier = null;
       }
     }
   };
@@ -259,7 +339,7 @@ const App = () => {
       const form = document.createElement('form');
       form.action = 'https://secure.payu.in/_payment';
       form.method = 'POST';
-      form.target = '_blank';
+      //form.target = '_blank';
   
   
       for (const key in paymentData) {
@@ -404,6 +484,8 @@ const App = () => {
           lastName: data.invoice.guest.last_name,
           phone: data.invoice.guest.mobile_phone,
           membership: data.invoice.invoice_items[0].name,
+          netPrice:data.invoice.invoice_items[0].price.sales,
+          tax:data.invoice.invoice_items[0].price.tax,
           price:data.invoice.invoice_items[0].price.final,
         });
         setShowOTPModal(true);
@@ -441,6 +523,39 @@ const App = () => {
     setGuestInfo(null);
     localStorage.removeItem('guestInfo');
     localStorage.setItem('showOTPModal', 'false');
+  };
+
+  // Add payment result handling
+  useEffect(() => {
+    const handlePaymentResult = async () => {
+      const queryParams = new URLSearchParams(window.location.search);
+      const status = queryParams.get("status");
+      const error_message = queryParams.get("error_message");
+      const sisinvoiceid = queryParams.get("sisinvoiceid");
+      const productinfo = queryParams.get("productinfo");
+      const amount = queryParams.get("amount");
+
+      if (status) {
+        setPaymentResult({
+          status,
+          error_message,
+          sisinvoiceid,
+          productinfo,
+          amount,
+          invoiceStatus: sisinvoiceid === 'true' ? 'closed' : 'pending'
+        });
+        setShowOTPModal(false); // Hide OTP/User modal if pe
+      }
+    };
+
+    handlePaymentResult();
+  }, []);
+
+  // Close payment result modal
+  const handleClosePaymentResult = () => {
+    setPaymentResult(null);
+    // Clear query params from URL
+    window.history.replaceState({}, document.title, window.location.pathname);
   };
 
   return (
@@ -509,6 +624,80 @@ const App = () => {
         </div>
       )}
 
+      {/* Payment Result Modal */}
+      {paymentResult && (
+        <div className="modern-modal">
+          <div className="modern-modal-card animate-modal-in" style={{maxWidth: 380, padding: '2.5rem 2rem 2rem 2rem', textAlign: 'center', position: 'relative'}}>
+            <span
+              className="modern-modal-close"
+              onClick={handleClosePaymentResult}
+              style={{position: 'absolute', top: 18, right: 18, fontSize: 24, color: '#ff4d4f', cursor: 'pointer'}}
+              title="Close"
+            >&#10006;</span>
+            
+            {paymentResult.status === 'success' ? (
+              <>
+                <h2 style={{
+                  fontSize: '2rem',
+                  fontWeight: 700,
+                  color: '#4BB543',
+                  marginBottom: '1.2rem',
+                  letterSpacing: '0.01em',
+                }}>Payment Successful</h2>
+                <div style={{margin: '1.2rem 0', fontSize: '1.1rem'}}>
+                  <div style={{
+                    padding: '1rem',
+                    background: '#f8f9fa',
+                    borderRadius: '8px',
+                    marginBottom: '1rem'
+                  }}>
+                    <div><strong>Payment Status:</strong> Successful</div>
+                    <div><strong>Invoice Status:</strong> {paymentResult.invoiceStatus === 'closed' ? 'Closed' : 'Pending'}</div>
+                    {paymentResult.sisinvoiceid === 'true' && (
+                      <>
+                        <div><strong>Product:</strong> {paymentResult.productinfo}</div>
+                        <div><strong>Amount:</strong> ₹{paymentResult.amount}</div>
+                      </>
+                    )}
+                  </div>
+                  {paymentResult.invoiceStatus === 'closed' ? (
+                    <div style={{color: '#4BB543'}}>
+                      Your membership has been activated successfully!
+                    </div>
+                  ) : (
+                    <div style={{color: '#ff9800'}}>
+                      Your invoice is still open. Please contact support if this persists.
+                    </div>
+                  )}
+                </div>
+              </>
+            ) : (
+              <>
+                <h2 style={{
+                  fontSize: '2rem',
+                  fontWeight: 700,
+                  color: '#ff4d4f',
+                  marginBottom: '1.2rem',
+                  letterSpacing: '0.01em',
+                }}>Payment Failed</h2>
+                {paymentResult.error_message && (
+                  <div style={{
+                    color: '#ff4d4f',
+                    background: '#fff0f0',
+                    borderRadius: 8,
+                    padding: '0.8rem 1rem',
+                    margin: '1.2rem 0',
+                    fontSize: '1.05rem',
+                    fontWeight: 500,
+                  }}>{paymentResult.error_message}</div>
+                )}
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* User Details/OTP Modal (unchanged) */}
       {showOTPModal && guestInfo && (
         <div className="modern-modal">
           <div className="modern-modal-card animate-modal-in">
@@ -521,9 +710,11 @@ const App = () => {
             </div>
             <div className="modern-modal-details">
               <div className="modern-modal-row"><span>Name:</span> <strong>{guestInfo?.firstName} {guestInfo?.lastName}</strong></div>
-              <div className="modern-modal-row"><span>Phone:</span> <strong>+91 {guestInfo?.phone}</strong></div>
+              <div className="modern-modal-row"><span>Phone:</span> <strong>{guestInfo?.phone?.includes('+91') ? guestInfo.phone.replace('+91', '').trim() : guestInfo?.phone}</strong></div>
               <div className="modern-modal-row"><span>Selected Membership:</span> <strong>{guestInfo?.membership}</strong></div>
-              <div className="modern-modal-row"><span>Total Price:</span> <strong>{guestInfo.price}</strong></div>
+              <div className="modern-modal-row"><span>Price:</span> <strong>₹{guestInfo?.netPrice?.toLocaleString()}</strong></div>
+              <div className="modern-modal-row"><span>Tax Price:</span> <strong>₹{guestInfo?.tax?.toLocaleString()}</strong></div>
+              <div className="modern-modal-row"><span>Total Price:</span> <strong>₹{guestInfo?.price?.toLocaleString()}</strong></div>
             </div>
             <button className="modern-modal-confirm" onClick={() => fetchPayment(guestInfo)}>Confirm</button>
           </div>
@@ -546,8 +737,7 @@ const App = () => {
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     maxLength={10}
-                    style={{marginBottom: '1.2rem'}}
-                  />
+                    style={{marginBottom: '1.2rem'}} />
                 </div>
                 <button className="modern-modal-confirm" onClick={sendOtp}>Continue</button>
               </>
@@ -571,8 +761,7 @@ const App = () => {
                     value={otp}
                     onChange={(e) => setOtp(e.target.value)}
                     maxLength={6}
-                    style={{marginBottom: '1.2rem'}}
-                  />
+                    style={{marginBottom: '1.2rem'}} />
                 </div>
                 <div className="modern-modal-actions" style={{justifyContent: 'center'}}>
                   <button className="modern-modal-confirm wide-btn" onClick={verifyOtp} disabled={otp.length !== 6}>Continue</button>
@@ -589,14 +778,12 @@ const App = () => {
                     className="modern-modal-input"
                     placeholder="First Name"
                     value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
-                  />
+                    onChange={(e) => setFirstName(e.target.value)} />
                   <input
                     className="modern-modal-input"
                     placeholder="Last Name"
                     value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
-                  />
+                    onChange={(e) => setLastName(e.target.value)} />
                   <div style={{marginBottom: '1.2rem'}}>
                     <label style={{marginRight: '1.5rem'}}>
                       <input
@@ -604,8 +791,7 @@ const App = () => {
                         name="gender"
                         value={1}
                         checked={gender === 1}
-                        onChange={() => setGender(1)}
-                      /> Male
+                        onChange={() => setGender(1)} /> Male
                     </label>
                     <label>
                       <input
@@ -613,8 +799,7 @@ const App = () => {
                         name="gender"
                         value={2}
                         checked={gender === 2}
-                        onChange={() => setGender(2)}
-                      /> Female
+                        onChange={() => setGender(2)} /> Female
                     </label>
                   </div>
                 </div>
@@ -624,7 +809,7 @@ const App = () => {
           </div>
         </div>
       )}
-      <div id="recaptcha-container"></div>
+      <div id="recaptcha-container" style={{ position: 'fixed', bottom: 0, right: 0, zIndex: -1, opacity: 0 }}></div>
     </div>
   );
 };
