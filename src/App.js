@@ -342,9 +342,13 @@ const App = () => {
 
   const createInvoice = async (guestId) => {
     try {
+      if (!membershipId) {
+        throw new Error('No membership selected');
+      }
+
       const payload = {
         center_id: "92d41019-c790-4668-9158-a693e531c1a4",
-        membership_ids: [membershipId],
+        membership_ids: membershipId,
         user_id: guestId,
       };
 
@@ -365,18 +369,19 @@ const App = () => {
 
       if (data.success) {
         setInvoiceId(data.invoice_id);
-        console.log(data.invoice_id)
-        //alert(`Invoice created successfully with ID: ${data.invoice_id}`);
+        console.log('Invoice created with ID:', data.invoice_id);
         fetchInvoiceDetails(data.invoice_id);
       } else {
-        //alert('Invoice creation failed: ' + (data.error.message || 'Unknown error'));
+        throw new Error(data.error?.message || 'Failed to create invoice');
       }
     } catch (err) {
       console.error('Error creating invoice:', err);
       if (err.message === 'RATE_LIMIT') {
-        //alert('Too many requests. Please try again in a few moments.');
+        alert('Too many requests. Please try again in a few moments.');
+      } else if (err.message === 'No membership selected') {
+        alert('Please select a membership first.');
       } else {
-        //alert('Invoice creation failed. Please try again.');
+        alert('Invoice creation failed. Please try again.');
       }
     }
   };
