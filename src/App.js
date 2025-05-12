@@ -546,26 +546,41 @@ const App = () => {
               <>
                 <div className="modern-modal-header">
                   <h2>OTP Verification</h2>
+                  <p className="otp-subtitle">Enter the 6-digit code sent to +91 {phone}</p>
                 </div>
                 <div className="modern-modal-details">
-                  <input
-                    type="text"
-                    className="modern-modal-input"
-                    placeholder="Enter OTP"
-                    value={otp}
-                    onChange={(e) => setOtp(e.target.value)}
-                    maxLength={6}
-                    style={{marginBottom: '1.2rem'}}
-                  />
+                  <div className="otp-input-container">
+                    <input
+                      type="text"
+                      className="modern-modal-input otp-input"
+                      placeholder="Enter OTP"
+                      value={otp}
+                      onChange={(e) => setOtp(e.target.value)}
+                      maxLength={6}
+                    />
+                    <div className="otp-timer">
+                      <span>Resend OTP in </span>
+                      <span className="timer">30s</span>
+                    </div>
+                  </div>
                 </div>
-                <div className="modern-modal-actions">
-                  <button className="modern-modal-back-icon-btn" onClick={() => setStep(1)} aria-label="Back">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <circle cx="12" cy="12" r="12" fill="#b69348"/>
-                      <path d="M14.5 7.5L10 12l4.5 4.5" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                <div className="modern-modal-actions otp-actions">
+                  <button 
+                    className="modern-modal-back-btn" 
+                    onClick={() => setStep(1)}
+                  >
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M19 12H5M12 19l-7-7 7-7"/>
                     </svg>
+                    Back
                   </button>
-                  <button className="modern-modal-confirm" onClick={verifyOtp}>Continue</button>
+                  <button 
+                    className="modern-modal-confirm verify-btn" 
+                    onClick={verifyOtp}
+                    disabled={otp.length !== 6}
+                  >
+                    Verify OTP
+                  </button>
                 </div>
               </>
             )}

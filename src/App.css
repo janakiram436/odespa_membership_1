@@ -813,3 +813,121 @@ label {
 .modern-payment-result-btn:hover {
   background: linear-gradient(90deg, #a07c2c 0%, #d4b04a 100%);
 }
+
+/* OTP Verification Modal Styles */
+.otp-subtitle {
+  color: #666;
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+  text-align: center;
+}
+
+.otp-input-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+.otp-input {
+  width: 100%;
+  max-width: 280px;
+  height: 45px;
+  font-size: 1.2rem;
+  text-align: center;
+  letter-spacing: 0.5rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.otp-input:focus {
+  border-color: #b69348;
+  box-shadow: 0 0 0 2px rgba(182, 147, 72, 0.1);
+  outline: none;
+}
+
+.otp-timer {
+  font-size: 0.9rem;
+  color: #666;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.otp-timer .timer {
+  color: #b69348;
+  font-weight: 600;
+}
+
+.otp-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding: 0 1rem;
+}
+
+.modern-modal-back-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: #f5f5f5;
+  border: none;
+  border-radius: 6px;
+  color: #666;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.modern-modal-back-btn:hover {
+  background: #e0e0e0;
+}
+
+.modern-modal-back-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+.verify-btn {
+  flex: 1;
+  padding: 0.75rem 1.5rem;
+  background: #b69348;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.verify-btn:hover:not(:disabled) {
+  background: #a5823d;
+}
+
+.verify-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+/* Update existing modal styles */
+.modern-modal-card {
+  max-width: 400px;
+  width: 90%;
+  padding: 2rem;
+}
+
+.modern-modal-header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.modern-modal-header h2 {
+  color: #333;
+  font-size: 1.5rem;
+  margin: 0;
+}
