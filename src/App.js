@@ -34,7 +34,7 @@ const setupRecaptcha = () => {
         window.recaptchaVerifier = null;
       }
 
-      // Create new reCAPTCHA verifier
+      // Create new reCAPTCHA verifier with explicit render
       window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
         'size': 'invisible',
         'callback': (response) => {
@@ -51,10 +51,13 @@ const setupRecaptcha = () => {
         }
       });
 
-      // Render the reCAPTCHA
+      // Explicitly render the reCAPTCHA
       window.recaptchaVerifier.render().then(function(widgetId) {
         window.recaptchaWidgetId = widgetId;
         resolve(widgetId);
+      }).catch(function(error) {
+        console.error('reCAPTCHA render error:', error);
+        reject(error);
       });
     } catch (error) {
       console.error('Error setting up reCAPTCHA:', error);
@@ -89,20 +92,31 @@ const App = () => {
   const [paymentResult, setPaymentResult] = useState(null);
   const MAX_RETRIES = 3;
   const RETRY_DELAY = 2000; // 2 seconds
+  const [isRecaptchaReady, setIsRecaptchaReady] = useState(false);
 
   // Initialize reCAPTCHA when component mounts
   useEffect(() => {
+    let mounted = true;
+
     const initializeRecaptcha = async () => {
       try {
         await setupRecaptcha();
+        if (mounted) {
+          setIsRecaptchaReady(true);
+        }
       } catch (error) {
         console.error('Failed to initialize reCAPTCHA:', error);
+        if (mounted) {
+          setIsRecaptchaReady(false);
+        }
       }
     };
+
     initializeRecaptcha();
 
     // Cleanup on unmount
     return () => {
+      mounted = false;
       if (window.recaptchaVerifier) {
         window.recaptchaVerifier.clear();
         window.recaptchaVerifier = null;
@@ -225,6 +239,11 @@ const App = () => {
         return;
       }
 
+      if (!isRecaptchaReady) {
+        alert('Please wait while we set up verification...');
+        return;
+      }
+
       // Reset and setup new reCAPTCHA
       try {
         await setupRecaptcha();
@@ -279,6 +298,7 @@ const App = () => {
         window.recaptchaVerifier.clear();
         window.recaptchaVerifier = null;
       }
+      setIsRecaptchaReady(false);
     }
   };
 
@@ -809,7 +829,14 @@ const App = () => {
           </div>
         </div>
       )}
-      <div id="recaptcha-container" style={{ position: 'fixed', bottom: 0, right: 0, zIndex: -1, opacity: 0 }}></div>
+      <div id="recaptcha-container" style={{ 
+        position: 'fixed', 
+        bottom: 0, 
+        right: 0, 
+        zIndex: -1, 
+        opacity: 0,
+        pointerEvents: 'none'
+      }}></div>
     </div>
   );
 };
