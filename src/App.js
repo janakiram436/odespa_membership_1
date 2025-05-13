@@ -1,8 +1,8 @@
-import React, { useRef, useEffect, useState } from 'react';
-import { FiArrowLeft, FiArrowRight } from 'react-icons/fi';
+import React, { useEffect, useRef, useState } from "react";
+import axios from "axios";
+import { FiArrowLeft, FiArrowRight } from "react-icons/fi";
+import "./App.css";
 import '@fortawesome/fontawesome-free/css/all.min.css';
-import axios from 'axios';
-import './App.css';
 import { initializeApp } from 'firebase/app';
 import { getAuth, RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth';
 import { getAnalytics } from 'firebase/analytics';
@@ -38,64 +38,76 @@ const setupRecaptcha = () => {
   });
 };
 
+
+
+
 const App = () => {
-  const carouselRef = useRef(null);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [selectedIndex, setSelectedIndex] = useState(null);
-  const [isAutoScrolling, setIsAutoScrolling] = useState(true);
+   //const carouselRef = useRef(null);
+   const [currentIndex, setCurrentIndex] = useState(0);
+   const [selectedIndex, setSelectedIndex] = useState(null);
+   //const [isAutoScrolling, setIsAutoScrolling] = useState(true);
+   //const [memberships, setMemberships] = useState([]);
+   //const [loading, setLoading] = useState(true);
+   //const [error, setError] = useState('');
+   const [showOTPModal, setShowOTPModal] = useState(false);
+   const [step, setStep] = useState(1);
+   const [phone, setPhone] = useState('');
+   const [otp, setOtp] = useState('');
+   const [confirmationResult, setConfirmationResult] = useState(null);
+   const [otpVerified, setOtpVerified] = useState(false);
+   const [showGuestForm, setShowGuestForm] = useState(false);
+   const [guestInfo, setGuestInfo] = useState(null);
+   const [firstName, setFirstName] = useState('');
+   const [lastName, setLastName] = useState('');
+   const [gender, setGender] = useState(null);
+   const [guestId, setGuestId] = useState(null);
+   const [membershipId, setMembershipId] = useState(null);
+   const [invoiceId, setInvoiceId] = useState(null);
+   //const [retryCount, setRetryCount] = useState(0);
+  const [paymentResult, setPaymentResult] = useState(null);
   const [memberships, setMemberships] = useState([]);
+  const [renderedCards, setRenderedCards] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [showOTPModal, setShowOTPModal] = useState(false);
-  const [step, setStep] = useState(1);
-  const [phone, setPhone] = useState('');
-  const [otp, setOtp] = useState('');
-  const [confirmationResult, setConfirmationResult] = useState(null);
-  const [otpVerified, setOtpVerified] = useState(false);
-  const [showGuestForm, setShowGuestForm] = useState(false);
-  const [guestInfo, setGuestInfo] = useState(null);
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [gender, setGender] = useState(null);
-  const [guestId, setGuestId] = useState(null);
-  const [membershipId, setMembershipId] = useState(null);
-  const [invoiceId, setInvoiceId] = useState(null);
   const [retryCount, setRetryCount] = useState(0);
-  const [paymentResult, setPaymentResult] = useState(null);
+  const [isAutoScrolling, setIsAutoScrolling] = useState(true);
+  const carouselRef = useRef(null);
+  const scrollInterval = useRef(null);
   const MAX_RETRIES = 3;
-  const RETRY_DELAY = 2000; // 2 seconds
+  const RETRY_DELAY = 2000;
 
-  // Initialize reCAPTCHA when component mounts
-  useEffect(() => {
+   // Initialize reCAPTCHA when component mounts
+   useEffect(() => {
     setupRecaptcha();
   }, []);
 
-  // Fetch memberships from Zenoti API with retry logic
+
+  // Fetch membership data
   useEffect(() => {
     const fetchMemberships = async () => {
       try {
         const response = await axios.get(
-          'https://api.zenoti.com/v1/centers/center_id/memberships?center_id=92d41019-c790-4668-9158-a693e531c1a4&show_in_catalog=true&expand=Null',
+          "https://api.zenoti.com/v1/centers/center_id/memberships?center_id=92d41019-c790-4668-9158-a693e531c1a4&show_in_catalog=true&expand=Null",
           {
             headers: {
-              accept: 'application/json',
-              Authorization: 'apikey 061fb3b3f6974acc828ced31bef595cca3f57e5bc194496785492e2b70362283',
+              accept: "application/json",
+              Authorization:
+                "apikey 061fb3b3f6974acc828ced31bef595cca3f57e5bc194496785492e2b70362283",
             },
           }
         );
-        setMemberships(response.data.memberships);
+        const data = response.data.memberships || [];
+        setMemberships(data);
+        setRenderedCards([...data, ...data]);
         setError('');
-        setRetryCount(0); // Reset retry count on success
+        setRetryCount(0);
       } catch (err) {
-        console.error('Error fetching memberships:', err);
+        console.error("Error fetching memberships:", err);
         if (err.response?.status === 429 && retryCount < MAX_RETRIES) {
-          // If rate limited and haven't exceeded max retries
-          setRetryCount(prev => prev + 1);
-          setTimeout(() => {
-            fetchMemberships(); // Retry after delay
-          }, RETRY_DELAY * (retryCount + 1)); // Exponential backoff
+          setRetryCount((prev) => prev + 1);
+          setTimeout(fetchMemberships, RETRY_DELAY * (retryCount + 1));
         } else {
-          setError('Failed to fetch memberships. Please try again later.');
+          setError("Failed to fetch memberships. Please try again later.");
         }
       } finally {
         setLoading(false);
@@ -105,65 +117,39 @@ const App = () => {
     fetchMemberships();
   }, [retryCount]);
 
-  // Auto scroll functionality
+  // Infinite scroll logic
   useEffect(() => {
-    let autoScrollInterval;
-    let scrollPosition = 0;
-    const cardWidth = 350 + 32; // card width + margin
-    const scrollSpeed = 5;
-    
-    const startAutoScroll = () => {
-      if (isAutoScrolling) {
-        autoScrollInterval = setInterval(() => {
-          if (carouselRef.current) {
-            scrollPosition += scrollSpeed;
-            
-            if (scrollPosition >= cardWidth * memberships.length) {
-              scrollPosition = 0;
-            }
-            
-            carouselRef.current.scrollTo({
-              left: scrollPosition,
-              behavior: 'auto'
-            });
-            
-            setCurrentIndex(prev => (prev + 1) % memberships.length);
-          }
-        }, 16);
-      }
-    };
+    if (!renderedCards.length || !isAutoScrolling) return;
 
-    startAutoScroll();
+    scrollInterval.current = setInterval(() => {
+      if (!carouselRef.current) return;
 
-    return () => {
-      if (autoScrollInterval) {
-        clearInterval(autoScrollInterval);
+      const container = carouselRef.current;
+      container.scrollLeft += 4;
+
+      // Near end? Clone more
+      if (container.scrollLeft + container.clientWidth >= container.scrollWidth - 2) {
+        setRenderedCards((prev) => [...prev, ...memberships]);
       }
-    };
-  }, [isAutoScrolling, memberships.length]);
+    }, 10);
+
+    return () => clearInterval(scrollInterval.current);
+  }, [renderedCards, memberships, isAutoScrolling]);
+
+  const scrollCarousel = (direction) => {
+    const amount = 300;
+    if (carouselRef.current) {
+      carouselRef.current.scrollLeft += direction === "left" ? -amount : amount;
+    }
+  };
 
   const handleUserInteraction = () => {
     setIsAutoScrolling(false);
-    setTimeout(() => {
-      setIsAutoScrolling(true);
-    }, 5000);
+    setTimeout(() => setIsAutoScrolling(true), 5000); // resume after 5s
   };
 
-  const scrollCarousel = (direction) => {
-    if (carouselRef.current) {
-      const cardWidth = carouselRef.current.children[0].offsetWidth + 32;
-      carouselRef.current.scrollBy({ 
-        left: direction === 'right' ? cardWidth : -cardWidth, 
-        behavior: 'smooth' 
-      });
-      setCurrentIndex(prev => {
-        const newIndex = direction === 'right' 
-          ? (prev + 1) % memberships.length 
-          : (prev - 1 + memberships.length) % memberships.length;
-        return newIndex;
-      });
-    }
-  };
+  //   alert(`Selected membership: ${membership.name}`);
+  // };
 
   const handleSelect = (membership) => {
     setSelectedIndex(memberships.indexOf(membership));
@@ -198,6 +184,7 @@ const App = () => {
     }
   };
 
+
   const verifyOtp = async () => {
     try {
       await confirmationResult.confirm(otp);
@@ -226,330 +213,322 @@ const App = () => {
   };
 
   const generateHash = (paymentData, salt) => {
-      const { key, txnid, amount, productinfo, firstname, email, phone, udf1 = '', udf2 = '', udf3 = '', udf4 = '', udf5 = '' } = paymentData;
-      const hashString = `${key}|${txnid}|${amount}|${productinfo}|${firstname}|${email}|${udf1}|${udf2}|${udf3}|${udf4}|${udf5}||||||${salt}`;
-      return SHA512(hashString).toString();
-    };
-  
-  
-    const fetchPayment = (guestDetails) => {
-      const paymentData = {
-        key: '26sF13CI',
-        txnid: invoiceId, //'TXN' + Math.random().toString(36).substring(7),
-        amount: "1",//guestDetails.price,
-        productinfo: guestDetails.membership,
-        firstname: guestDetails.firstName,
-        email: '',
-        phone: phone,
-        udf1: '', udf2: '', udf3: '', udf4: '', udf5: '',
-        salt: '0Rd0lVQEvO',
-        surl: "https://odespa-backend1.onrender.com/api/payu/success",
-        furl: "https://odespa-backend1.onrender.com/api/payu/failure",
-      };
-  
-  
-      const hash = generateHash(paymentData, paymentData.salt);
-      paymentData.hash = hash;
-  
-  
-      const form = document.createElement('form');
-      form.action = 'https://secure.payu.in/_payment';
-      form.method = 'POST';
-      //form.target = '_blank';
-  
-  
-      for (const key in paymentData) {
-        const input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = key;
-        input.value = paymentData[key];
-        form.appendChild(input);
-      }
-  
-  
-      document.body.appendChild(form);
-      form.submit();
-    };
-
-  const fetchGuestId = async () => {
-    try {
-      const response = await axios.get(
-        `https://api.zenoti.com/v1/guests/search?phone=${phone}`,
-        {
-          headers: {
-            Authorization: 'apikey 061fb3b3f6974acc828ced31bef595cca3f57e5bc194496785492e2b70362283',
-            accept: 'application/json',
-          },
-        }
-      );
-      const guests = response.data.guests;
-      if (guests.length > 0) {
-        setGuestId(guests[0].id);
-        //alert('Guest is present');
-        createInvoice(guests[0].id);
-      } else {
-        setShowGuestForm(true);
-        //alert('You don\'t have an account. Please create one.');
-      }
-    } catch (err) {
-      console.error('Error searching guest:', err);
-      if (err.response?.status === 429) {
-        //alert('Too many requests. Please try again in a few moments.');
-      } else {
-        //alert('Failed to search guest. Please try again.');
-      }
-    }
+    const { key, txnid, amount, productinfo, firstname, email, phone, udf1 = '', udf2 = '', udf3 = '', udf4 = '', udf5 = '' } = paymentData;
+    const hashString = `${key}|${txnid}|${amount}|${productinfo}|${firstname}|${email}|${udf1}|${udf2}|${udf3}|${udf4}|${udf5}||||||${salt}`;
+    return SHA512(hashString).toString();
   };
 
-  const createGuest = async () => {
-    try {
-      const payload = {
-        center_id: "92d41019-c790-4668-9158-a693e531c1a4",
-        personal_info: {
-          first_name: firstName,
-          last_name: lastName,
-          mobile_phone: {
-            country_code: 95,
-            number: phone
-          },
-          gender: gender === 1 ? 1 : 0
-        }
-      };
-      const response = await axios.post(
-        'https://api.zenoti.com/v1/guests',
-        payload,
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: 'apikey 061fb3b3f6974acc828ced31bef595cca3f57e5bc194496785492e2b70362283',
-          }
-        }
-      );
-      setGuestInfo(response.data);
-      setGuestId(response.data.id);
-      //alert('Guest created successfully!');
-      createInvoice(response.data.id);
-    } catch (err) {
-      console.error('Error creating guest:', err);
-      if (err.response?.status === 429) {
-        //alert('Too many requests. Please try again in a few moments.');
-      } else {
-        //alert('Guest creation failed. Please try again.');
-      }
+
+  const fetchPayment = (guestDetails) => {
+    const paymentData = {
+      key: '26sF13CI',
+      txnid: invoiceId, //'TXN' + Math.random().toString(36).substring(7),
+      amount: "1",//guestDetails.price,
+      productinfo: guestDetails.membership,
+      firstname: guestDetails.firstName,
+      email: '',
+      phone: phone,
+      udf1: '', udf2: '', udf3: '', udf4: '', udf5: '',
+      salt: '0Rd0lVQEvO',
+      surl: "https://odespa-backend1.onrender.com/api/payu/success",
+      furl: "https://odespa-backend1.onrender.com/api/payu/failure",
+    };
+
+
+    const hash = generateHash(paymentData, paymentData.salt);
+    paymentData.hash = hash;
+
+
+    const form = document.createElement('form');
+    form.action = 'https://secure.payu.in/_payment';
+    form.method = 'POST';
+    //form.target = '_blank';
+
+
+    for (const key in paymentData) {
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = key;
+      input.value = paymentData[key];
+      form.appendChild(input);
     }
+
+
+    document.body.appendChild(form);
+    form.submit();
   };
 
-  const createInvoice = async (guestId) => {
-    try {
-      if (!membershipId) {
-        throw new Error('No membership selected');
+const fetchGuestId = async () => {
+  try {
+    const response = await axios.get(
+      `https://api.zenoti.com/v1/guests/search?phone=${phone}`,
+      {
+        headers: {
+          Authorization: 'apikey 061fb3b3f6974acc828ced31bef595cca3f57e5bc194496785492e2b70362283',
+          accept: 'application/json',
+        },
       }
+    );
+    const guests = response.data.guests;
+    if (guests.length > 0) {
+      setGuestId(guests[0].id);
+      //alert('Guest is present');
+      createInvoice(guests[0].id);
+    } else {
+      setShowGuestForm(true);
+      //alert('You don\'t have an account. Please create one.');
+    }
+  } catch (err) {
+    console.error('Error searching guest:', err);
+    if (err.response?.status === 429) {
+      //alert('Too many requests. Please try again in a few moments.');
+    } else {
+      //alert('Failed to search guest. Please try again.');
+    }
+  }
+};
 
-      const payload = {
-        center_id: "92d41019-c790-4668-9158-a693e531c1a4",
-        membership_ids: membershipId,
-        user_id: guestId,
-      };
-
-      const response = await fetch('https://api.zenoti.com/v1/invoices/memberships', {
-        method: 'POST',
+const createGuest = async () => {
+  try {
+    const payload = {
+      center_id: "92d41019-c790-4668-9158-a693e531c1a4",
+      personal_info: {
+        first_name: firstName,
+        last_name: lastName,
+        mobile_phone: {
+          country_code: 95,
+          number: phone
+        },
+        gender: gender === 1 ? 1 : 0
+      }
+    };
+    const response = await axios.post(
+      'https://api.zenoti.com/v1/guests',
+      payload,
+      {
         headers: {
           'Content-Type': 'application/json',
           Authorization: 'apikey 061fb3b3f6974acc828ced31bef595cca3f57e5bc194496785492e2b70362283',
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (response.status === 429) {
-        throw new Error('RATE_LIMIT');
-      }
-
-      const data = await response.json();
-
-      if (data.success) {
-        setInvoiceId(data.invoice_id);
-        console.log('Invoice created with ID:', data.invoice_id);
-        fetchInvoiceDetails(data.invoice_id);
-      } else {
-        throw new Error(data.error?.message || 'Failed to create invoice');
-      }
-    } catch (err) {
-      console.error('Error creating invoice:', err);
-      if (err.message === 'RATE_LIMIT') {
-        //alert('Too many requests. Please try again in a few moments.');
-         console.log(err.message)
-      } else if (err.message === 'No membership selected') {
-        //alert('Please select a membership first.');
-         console.log(err.message)
-      } else {
-        //alert('Invoice creation failed. Please try again.');
-        console.log(err)
-      }
-    }
-  };
-
-  const fetchInvoiceDetails = async (invoiceId) => {
-    try {
-      const url = `https://api.zenoti.com/v1/invoices/${invoiceId}?expand=InvoiceItems&expand=Transactions`;
-      const options = {
-        method: 'GET',
-        headers: {
-          accept: 'application/json',
-          Authorization: 'apikey 061fb3b3f6974acc828ced31bef595cca3f57e5bc194496785492e2b70362283'
         }
-      };
-
-      const response = await fetch(url, options);
-      const data = await response.json();
-
-      if (data.invoice && data.invoice.guest) {
-        setGuestInfo({
-          firstName: data.invoice.guest.first_name,
-          lastName: data.invoice.guest.last_name,
-          phone: data.invoice.guest.mobile_phone,
-          membership: data.invoice.invoice_items[0].name,
-          netPrice:data.invoice.invoice_items[0].price.sales,
-          tax:data.invoice.invoice_items[0].price.tax,
-          price:data.invoice.invoice_items[0].price.final,
-        });
-        setShowOTPModal(true);
       }
-    } catch (err) {
-      console.error('Error fetching invoice details:', err);
-    }
-  };
-
-  // Load guestInfo and showOTPModal from localStorage on mount
-  useEffect(() => {
-    const storedGuestInfo = localStorage.getItem('guestInfo');
-    const storedShowOTPModal = localStorage.getItem('showOTPModal');
-    if (storedGuestInfo) {
-      setGuestInfo(JSON.parse(storedGuestInfo));
-    }
-    if (storedShowOTPModal === 'true') {
-      setShowOTPModal(true);
-    }
-  }, []);
-
-  // Persist guestInfo and showOTPModal to localStorage when they change
-  useEffect(() => {
-    if (guestInfo) {
-      localStorage.setItem('guestInfo', JSON.stringify(guestInfo));
+    );
+    setGuestInfo(response.data);
+    setGuestId(response.data.id);
+    //alert('Guest created successfully!');
+    createInvoice(response.data.id);
+  } catch (err) {
+    console.error('Error creating guest:', err);
+    if (err.response?.status === 429) {
+      //alert('Too many requests. Please try again in a few moments.');
     } else {
-      localStorage.removeItem('guestInfo');
+      //alert('Guest creation failed. Please try again.');
     }
-    localStorage.setItem('showOTPModal', showOTPModal ? 'true' : 'false');
-  }, [guestInfo, showOTPModal]);
+  }
+};
 
-  // When cancel icon is clicked, close modal and clear guestInfo from localStorage
-  const handleCloseModal = () => {
-    setShowOTPModal(false);
-    setGuestInfo(null);
-    localStorage.removeItem('guestInfo');
-    localStorage.setItem('showOTPModal', 'false');
-  };
+const createInvoice = async (guestId) => {
+  try {
+    if (!membershipId) {
+      throw new Error('No membership selected');
+    }
 
-  // Add payment result handling
-  useEffect(() => {
-    const handlePaymentResult = async () => {
-      const queryParams = new URLSearchParams(window.location.search);
-      const status = queryParams.get("status");
-      const error_message = queryParams.get("error_message");
-      const sisinvoiceid = queryParams.get("sisinvoiceid");
-      const productinfo = queryParams.get("productinfo");
-      const amount = queryParams.get("amount");
+    const payload = {
+      center_id: "92d41019-c790-4668-9158-a693e531c1a4",
+      membership_ids: membershipId,
+      user_id: guestId,
+    };
 
-      if (status) {
-        setPaymentResult({
-          status,
-          error_message,
-          sisinvoiceid,
-          productinfo,
-          amount,
-          invoiceStatus: sisinvoiceid === 'true' ? 'closed' : 'pending'
-        });
-        setShowOTPModal(false); // Hide OTP/User modal if pe
+    const response = await fetch('https://api.zenoti.com/v1/invoices/memberships', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'apikey 061fb3b3f6974acc828ced31bef595cca3f57e5bc194496785492e2b70362283',
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (response.status === 429) {
+      throw new Error('RATE_LIMIT');
+    }
+
+    const data = await response.json();
+
+    if (data.success) {
+      setInvoiceId(data.invoice_id);
+      console.log('Invoice created with ID:', data.invoice_id);
+      fetchInvoiceDetails(data.invoice_id);
+    } else {
+      throw new Error(data.error?.message || 'Failed to create invoice');
+    }
+  } catch (err) {
+    console.error('Error creating invoice:', err);
+    if (err.message === 'RATE_LIMIT') {
+      //alert('Too many requests. Please try again in a few moments.');
+       console.log(err.message)
+    } else if (err.message === 'No membership selected') {
+      //alert('Please select a membership first.');
+       console.log(err.message)
+    } else {
+      //alert('Invoice creation failed. Please try again.');
+      console.log(err)
+    }
+  }
+};
+
+const fetchInvoiceDetails = async (invoiceId) => {
+  try {
+    const url = `https://api.zenoti.com/v1/invoices/${invoiceId}?expand=InvoiceItems&expand=Transactions`;
+    const options = {
+      method: 'GET',
+      headers: {
+        accept: 'application/json',
+        Authorization: 'apikey 061fb3b3f6974acc828ced31bef595cca3f57e5bc194496785492e2b70362283'
       }
     };
 
-    handlePaymentResult();
-  }, []);
+    const response = await fetch(url, options);
+    const data = await response.json();
 
-  // Close payment result modal
-  const handleClosePaymentResult = () => {
-    setPaymentResult(null);
-    // Clear query params from URL
-    window.history.replaceState({}, document.title, window.location.pathname);
+    if (data.invoice && data.invoice.guest) {
+      setGuestInfo({
+        firstName: data.invoice.guest.first_name,
+        lastName: data.invoice.guest.last_name,
+        phone: data.invoice.guest.mobile_phone,
+        membership: data.invoice.invoice_items[0].name,
+        netPrice:data.invoice.invoice_items[0].price.sales,
+        tax:data.invoice.invoice_items[0].price.tax,
+        price:data.invoice.invoice_items[0].price.final,
+      });
+      setShowOTPModal(true);
+    }
+  } catch (err) {
+    console.error('Error fetching invoice details:', err);
+  }
+};
+
+// Load guestInfo and showOTPModal from localStorage on mount
+useEffect(() => {
+  const storedGuestInfo = localStorage.getItem('guestInfo');
+  const storedShowOTPModal = localStorage.getItem('showOTPModal');
+  if (storedGuestInfo) {
+    setGuestInfo(JSON.parse(storedGuestInfo));
+  }
+  if (storedShowOTPModal === 'true') {
+    setShowOTPModal(true);
+  }
+}, []);
+
+// Persist guestInfo and showOTPModal to localStorage when they change
+useEffect(() => {
+  if (guestInfo) {
+    localStorage.setItem('guestInfo', JSON.stringify(guestInfo));
+  } else {
+    localStorage.removeItem('guestInfo');
+  }
+  localStorage.setItem('showOTPModal', showOTPModal ? 'true' : 'false');
+}, [guestInfo, showOTPModal]);
+
+// When cancel icon is clicked, close modal and clear guestInfo from localStorage
+const handleCloseModal = () => {
+  setShowOTPModal(false);
+  setGuestInfo(null);
+  localStorage.removeItem('guestInfo');
+  localStorage.setItem('showOTPModal', 'false');
+};
+
+// Add payment result handling
+useEffect(() => {
+  const handlePaymentResult = async () => {
+    const queryParams = new URLSearchParams(window.location.search);
+    const status = queryParams.get("status");
+    const error_message = queryParams.get("error_message");
+    const sisinvoiceid = queryParams.get("sisinvoiceid");
+    const productinfo = queryParams.get("productinfo");
+    const amount = queryParams.get("amount");
+
+    if (status) {
+      setPaymentResult({
+        status,
+        error_message,
+        sisinvoiceid,
+        productinfo,
+        amount,
+        invoiceStatus: sisinvoiceid === 'true' ? 'closed' : 'pending'
+      });
+      setShowOTPModal(false); // Hide OTP/User modal if pe
+    }
   };
+
+  handlePaymentResult();
+}, []);
+
+// Close payment result modal
+const handleClosePaymentResult = () => {
+  setPaymentResult(null);
+  // Clear query params from URL
+  window.history.replaceState({}, document.title, window.location.pathname);
+};
 
   return (
     <div className="membership-section">
       <h1 className="heading">Your Perfect Package Ode Spa Membership</h1>
+
       {loading ? (
         <div className="center-spinner">
           <div className="lds-spinner">
-            <div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
+            {Array.from({ length: 12 }).map((_, i) => <div key={i}></div>)}
           </div>
         </div>
-      ) : error ? <p>{error}</p> : (
-        <div 
+      ) : error ? (
+        <p>{error}</p>
+      ) : (
+        <div
           className="carousel-container"
           onMouseEnter={() => setIsAutoScrolling(false)}
           onMouseLeave={() => setIsAutoScrolling(true)}
         >
-          <button
-            className="arrow left"
-            onClick={() => {
-              scrollCarousel('left');
-              handleUserInteraction();
-            }}
-          >
+          <button className="arrow left" onClick={() => {
+            scrollCarousel('left');
+            handleUserInteraction();
+          }}>
             <FiArrowLeft className="arrow-icon" />
           </button>
-          <div 
-            className="carousel-wrapper" 
+
+          <div
+            className="carousel-wrapper"
             ref={carouselRef}
             onTouchStart={() => setIsAutoScrolling(false)}
             onTouchEnd={() => setTimeout(() => setIsAutoScrolling(true), 5000)}
           >
-            {memberships.map((m, idx) => (
-              <div
-                className={`service-style3 membership-type ${selectedIndex === idx ? 'selected' : ''}`}
-                key={m.id}
-                onClick={() => handleSelect(m)}
-              >
+            {renderedCards.map((m, idx) => (
+              <div className="service-style3 membership-type" key={`${m.id}-${idx}`} onClick={() => handleSelect(m)}>
                 <div>
-                  <h2>INR {m.price.sales.toLocaleString()}</h2>
+                  <h2>INR {m.price?.sales?.toLocaleString()}</h2>
                 </div>
                 <div>
                   <p>
-                    Discount on services - {m.discount_percentage || 50}%
-                    <br className="d-xs-none d-lg-block" />
+                    Discount on services - {m.discount_percentage || 50}%<br className="d-xs-none d-lg-block" />
                     Validity - {m.validity_in_months || 12} months
                   </p>
                 </div>
                 <div>
-                  <button className="select-location">
-                    Take Membership
-                  </button>
+                  <button className="select-location">Take Membership</button>
                 </div>
               </div>
             ))}
           </div>
-          <button
-            className="arrow right"
-            onClick={() => {
-              scrollCarousel('right');
-              handleUserInteraction();
-            }}
-          >
+
+          <button className="arrow right" onClick={() => {
+            scrollCarousel('right');
+            handleUserInteraction();
+          }}>
             <FiArrowRight className="arrow-icon" />
           </button>
         </div>
       )}
 
-      {/* Payment Result Modal */}
-      {paymentResult && (
+       {/* Payment Result Modal */}
+       {paymentResult && (
         <div className="modern-modal">
           <div className="modern-modal-card animate-modal-in" style={{maxWidth: 380, padding: '2.5rem 2rem 2rem 2rem', textAlign: 'center', position: 'relative'}}>
             <span
