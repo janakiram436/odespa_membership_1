@@ -7,7 +7,6 @@ import { initializeApp } from 'firebase/app';
 import { getAuth, RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth';
 import { getAnalytics } from 'firebase/analytics';
 import SHA512 from 'crypto-js/sha512';
-//import { FiArrowLeft, FiArrowRight } from 'react-icons/fi'; 
 // Your Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyC14KBARTHpl2H63sFT9y9fBKBV9lA8fvM",
@@ -377,11 +376,14 @@ const App = () => {
     } catch (err) {
       console.error('Error creating invoice:', err);
       if (err.message === 'RATE_LIMIT') {
-        alert('Too many requests. Please try again in a few moments.');
+        //alert('Too many requests. Please try again in a few moments.');
+         console.log(err.message)
       } else if (err.message === 'No membership selected') {
-        alert('Please select a membership first.');
+        //alert('Please select a membership first.');
+         console.log(err.message)
       } else {
-        alert('Invoice creation failed. Please try again.');
+        //alert('Invoice creation failed. Please try again.');
+        console.log(err)
       }
     }
   };
@@ -625,9 +627,7 @@ const App = () => {
           <div className="modern-modal-card animate-modal-in">
             <span className="modern-modal-close" onClick={handleCloseModal}>&#10006;</span>
             <div className="modern-modal-header">
-              <div className="modern-modal-check">
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#4BB543" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" fill="#eafaf1"/><path d="M8 12l2 2l4-4"/></svg>
-              </div>
+              
               <h2>User Details</h2>
             </div>
             <div className="modern-modal-details">
@@ -635,8 +635,8 @@ const App = () => {
               <div className="modern-modal-row"><span>Phone:</span> <strong>{guestInfo?.phone?.includes('+91') ? guestInfo.phone.replace('+91', '').trim() : guestInfo?.phone}</strong></div>
               <div className="modern-modal-row"><span>Selected Membership:</span> <strong>{guestInfo?.membership}</strong></div>
               <div className="modern-modal-row"><span>Price:</span> <strong>₹{guestInfo?.netPrice?.toLocaleString()}</strong></div>
-              <div className="modern-modal-row"><span>Tax Price:</span> <strong>₹{guestInfo?.tax?.toLocaleString()}</strong></div>
-              <div className="modern-modal-row"><span>Total Price:</span> <strong>₹{guestInfo?.price?.toLocaleString()}</strong></div>
+              <div className="modern-modal-row"><span>GST:</span> <strong>₹{guestInfo?.tax?.toLocaleString()}</strong></div>
+              <div className="modern-modal-row"><span>Total Amount:</span> <strong>₹{guestInfo?.price?.toLocaleString()}</strong></div>
             </div>
             <button className="modern-modal-confirm" onClick={() => fetchPayment(guestInfo)}>Confirm</button>
           </div>
