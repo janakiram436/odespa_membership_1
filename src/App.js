@@ -128,21 +128,43 @@ const App = () => {
       if (!carouselRef.current) return;
 
       const container = carouselRef.current;
-      container.scrollLeft += 0.5;
+      const cardWidth = container.querySelector('.service-style3.membership-type').offsetWidth;
+      const gap = 32;
+      const scrollAmount = cardWidth + gap;
+
+      container.scrollLeft += 1;
 
       // Near end? Clone more
-      if (container.scrollLeft + container.clientWidth >= container.scrollWidth - 2) {
-        setRenderedCards((prev) => [...prev, ...memberships]);
+      if (container.scrollLeft + container.clientWidth >= container.scrollWidth - scrollAmount) {
+        setRenderedCards(prev => [...prev, ...memberships]);
       }
-    }, 10);
+    }, 20);
 
     return () => clearInterval(scrollInterval.current);
   }, [renderedCards, memberships, isAutoScrolling]);
 
   const scrollCarousel = (direction) => {
-    const amount = 300;
-    if (carouselRef.current) {
-      carouselRef.current.scrollLeft += direction === "left" ? -amount : amount;
+    if (!carouselRef.current) return;
+    
+    const container = carouselRef.current;
+    const cardWidth = container.querySelector('.service-style3.membership-type').offsetWidth;
+    const gap = 32; // Gap between cards
+    const scrollAmount = cardWidth + gap;
+    
+    const currentScroll = container.scrollLeft;
+    const targetScroll = direction === "left" 
+      ? currentScroll - scrollAmount 
+      : currentScroll + scrollAmount;
+    
+    container.scrollTo({
+      left: targetScroll,
+      behavior: 'smooth'
+    });
+    
+    // Check if we need to add more cards
+    if (direction === "right" && 
+        container.scrollLeft + container.clientWidth >= container.scrollWidth - scrollAmount) {
+      setRenderedCards(prev => [...prev, ...memberships]);
     }
   };
 
@@ -472,6 +494,12 @@ const handleClosePaymentResult = () => {
   window.history.replaceState({}, document.title, window.location.pathname);
 };
 
+// Utility function to capitalize only the first letter of the message
+const capitalizeFirstLetter = (message) => {
+  if (!message) return "";
+  return message.charAt(0).toUpperCase() + message.slice(1).toLowerCase();
+};
+
   return (
     <div className="membership-section">
       <h1 className="heading">Your Perfect Package Ode Spa Membership</h1>
@@ -595,7 +623,7 @@ const handleClosePaymentResult = () => {
                     margin: '1.2rem 0',
                     fontSize: '1.05rem',
                     fontWeight: 500,
-                  }}>{paymentResult.error_message}</div>
+                  }}>{capitalizeFirstLetter(paymentResult.error_message)}</div>
                 )}
               </>
             )}
