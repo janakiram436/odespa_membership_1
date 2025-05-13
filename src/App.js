@@ -668,7 +668,7 @@ const handleClosePaymentResult = () => {
                     style={{marginBottom: '1.2rem'}} />
                 </div>
                 <div className="modern-modal-actions" style={{justifyContent: 'center'}}>
-                  <button className="modern-modal-confirm wide-btn" onClick={verifyOtp} disabled={otp.length !== 6}>Continue</button>
+                  <button className="modern-modal-confirm" onClick={verifyOtp} disabled={otp.length !== 6}>Continue</button>
                 </div>
               </>
             )}
