@@ -74,6 +74,11 @@ const App = () => {
   const [error, setError] = useState('');
   const [retryCount, setRetryCount] = useState(0);
   const [isAutoScrolling, setIsAutoScrolling] = useState(true);
+  const [isSendingOtp, setIsSendingOtp] = useState(false);
+  const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
+  const [isCreatingGuest, setIsCreatingGuest] = useState(false);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [isTakingMembership, setIsTakingMembership] = useState({});
   const carouselRef = useRef(null);
   const scrollInterval = useRef(null);
   const MAX_RETRIES = 3;
@@ -177,6 +182,7 @@ const App = () => {
   // };
 
   const handleSelect = (membership) => {
+    setIsTakingMembership(prev => ({ ...prev, [membership.id]: true }));
     setSelectedIndex(memberships.indexOf(membership));
     setShowOTPModal(true);
     setStep(1);
@@ -187,10 +193,14 @@ const App = () => {
     setGuestInfo(null);
     setMembershipId(membership.id);
     handleUserInteraction();
+    setTimeout(() => {
+      setIsTakingMembership(prev => ({ ...prev, [membership.id]: false }));
+    }, 1000);
   };
 
   const sendOtp = async () => {
     try {
+      setIsSendingOtp(true);
       if (!window.recaptchaVerifier) {
         setupRecaptcha();
       }
@@ -202,16 +212,18 @@ const App = () => {
     } catch (err) {
       console.error("Error in OTP sending", err);
       if (err.code === 'auth/captcha-check-failed') {
-        // Reset reCAPTCHA if it fails
         window.recaptchaVerifier = null;
         setupRecaptcha();
       }
+    } finally {
+      setIsSendingOtp(false);
     }
   };
 
 
   const verifyOtp = async () => {
     try {
+      setIsVerifyingOtp(true);
       await confirmationResult.confirm(otp);
       setOtpVerified(true);
       // After OTP verification, check if guest exists
@@ -234,6 +246,8 @@ const App = () => {
     } catch (err) {
       console.error(err);
       //alert('Incorrect OTP');
+    } finally {
+      setIsVerifyingOtp(false);
     }
   };
 
@@ -245,6 +259,7 @@ const App = () => {
 
 
   const fetchPayment = (guestDetails) => {
+    setIsProcessingPayment(true);
     const paymentData = {
       key: '26sF13CI',
       txnid: invoiceId, //'TXN' + Math.random().toString(36).substring(7),
@@ -315,6 +330,7 @@ const fetchGuestId = async () => {
 
 const createGuest = async () => {
   try {
+    setIsCreatingGuest(true);
     const payload = {
       center_id: "92d41019-c790-4668-9158-a693e531c1a4",
       personal_info: {
@@ -348,6 +364,8 @@ const createGuest = async () => {
     } else {
       //alert('Guest creation failed. Please try again.');
     }
+  } finally {
+    setIsCreatingGuest(false);
   }
 };
 
@@ -532,7 +550,7 @@ const capitalizeFirstLetter = (message) => {
             onTouchEnd={() => setTimeout(() => setIsAutoScrolling(true), 5000)}
           >
             {renderedCards.map((m, idx) => (
-              <div className="service-style3 membership-type" key={`${m.id}-${idx}`} onClick={() => handleSelect(m)}>
+              <div className="service-style3 membership-type" key={`${m.id}-${idx}`}>
                 <div>
                   <h2 style={{ fontFamily: 'Marcellus, serif' ,color:"#555555" }}>INR {m.price?.sales?.toLocaleString()}</h2>
                 </div>
@@ -543,7 +561,18 @@ const capitalizeFirstLetter = (message) => {
                   </p>
                 </div>
                 <div>
-                  <button className="select-location" style={{ fontFamily: 'DM Sans, sans-serif' }}>Take Membership</button>
+                  <button 
+                    className="select-location" 
+                    style={{ fontFamily: 'DM Sans, sans-serif' }} 
+                    onClick={() => handleSelect(m)}
+                    disabled={isTakingMembership[m.id]}
+                  >
+                    {isTakingMembership[m.id] ? (
+                      <div className="button-spinner"></div>
+                    ) : (
+                      'Take Membership'
+                    )}
+                  </button>
                 </div>
               </div>
             ))}
@@ -648,7 +677,17 @@ const capitalizeFirstLetter = (message) => {
               <div className="modern-modal-row"><span>GST:</span> <strong>₹{guestInfo?.tax?.toLocaleString()}</strong></div>
               <div className="modern-modal-row"><span>Total Amount:</span> <strong>₹{guestInfo?.price?.toLocaleString()}</strong></div>
             </div>
-            <button className="modern-modal-confirm" onClick={() => fetchPayment(guestInfo)}>Confirm</button>
+            <button 
+              className="modern-modal-confirm" 
+              onClick={() => fetchPayment(guestInfo)}
+              disabled={isProcessingPayment}
+            >
+              {isProcessingPayment ? (
+                <div className="button-spinner"></div>
+              ) : (
+                'Confirm'
+              )}
+            </button>
           </div>
         </div>
       )}
@@ -671,16 +710,24 @@ const capitalizeFirstLetter = (message) => {
                     maxLength={10}
                     style={{marginBottom: '1.2rem'}} />
                 </div>
-                <button className="modern-modal-confirm" onClick={sendOtp}>Continue</button>
+                <button 
+                  className="modern-modal-confirm" 
+                  onClick={sendOtp}
+                  disabled={isSendingOtp}
+                >
+                  {isSendingOtp ? (
+                    <div className="button-spinner"></div>
+                  ) : (
+                    'Continue'
+                  )}
+                </button>
               </>
             )}
             {step === 2 && !otpVerified && (
               <>
                 <div className="modern-modal-header" style={{justifyContent: 'flex-start', gap: '0.7rem'}}>
                   <button className="modern-modal-back-icon-btn" onClick={() => setStep(1)} aria-label="Back" style={{margin: 0}}>
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M15 19L8 12L15 5" stroke="#b69348" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
+                    &#8592;
                   </button>
                   <h2 style={{flex: 1, textAlign: 'center', margin: 0}}>OTP Verification</h2>
                 </div>
@@ -694,8 +741,18 @@ const capitalizeFirstLetter = (message) => {
                     maxLength={6}
                     style={{marginBottom: '1.2rem'}} />
                 </div>
-             
-                  <button className="modern-modal-confirm" onClick={verifyOtp} disabled={otp.length !== 6}>Continue</button>
+               
+                  <button 
+                    className="modern-modal-confirm" 
+                    onClick={verifyOtp} 
+                    disabled={otp.length !== 6 || isVerifyingOtp}
+                  >
+                    {isVerifyingOtp ? (
+                      <div className="button-spinner"></div>
+                    ) : (
+                      'Continue'
+                    )}
+                  </button>
               </>
             )}
             {otpVerified && showGuestForm && !guestInfo && (
@@ -733,7 +790,17 @@ const capitalizeFirstLetter = (message) => {
                     </label>
                   </div>
                 </div>
-                <button className="modern-modal-confirm" onClick={createGuest}>Submit</button>
+                <button 
+                  className="modern-modal-confirm" 
+                  onClick={createGuest}
+                  disabled={isCreatingGuest}
+                >
+                  {isCreatingGuest ? (
+                    <div className="button-spinner"></div>
+                  ) : (
+                    'Submit'
+                  )}
+                </button>
               </>
             )}
           </div>
