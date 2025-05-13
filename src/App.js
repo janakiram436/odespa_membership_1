@@ -244,8 +244,8 @@ const App = () => {
         phone: phone,
         udf1: '', udf2: '', udf3: '', udf4: '', udf5: '',
         salt: '0Rd0lVQEvO',
-        surl: "http://localhost:5000/api/payu/success",
-        furl: "http://localhost:5000/api/payu/failure",
+        surl: "https://odespa-backend1.onrender.com/api/payu/success",
+        furl: "https://odespa-backend1.onrender.com/api/payu/failure",
       };
   
   
