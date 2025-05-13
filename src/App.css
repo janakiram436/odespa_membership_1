@@ -149,18 +149,27 @@ body {
 }
 
 .service-style3.membership-type h2 {
-  font-size: 2rem;
-  font-weight: 600;
-  color: #222;
-  margin-bottom: 1.5rem;
-  font-family: 'Georgia', serif;
+  font-family: 'Marcellus', serif;
+  font-size: 2.5rem;
+  font-weight: 400;
+  color: #b69348;
+  margin-bottom: 1rem;
+  letter-spacing: 0.02em;
 }
 
 .service-style3.membership-type p {
+  font-family: 'DM Sans', sans-serif;
   font-size: 1.1rem;
-  color: #444;
-  margin-bottom: 2rem;
   line-height: 1.6;
+  color: #666;
+  margin-bottom: 1.5rem;
+}
+
+.service-style3.membership-type .select-location {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 500;
+  font-size: 1rem;
+  letter-spacing: 0.02em;
 }
 
 .select-location {
@@ -577,9 +586,10 @@ label {
     margin-top: 0.5rem;
   }
   .wide-btn {
-    font-size: 1rem;
-    padding: 0.85rem 0;
-    border-radius: 8px;
+    max-width: 95vw;
+    font-size: 1.05rem;
+    padding: 1rem 0.2rem;
+    border-radius: 10px;
   }
 }
 
@@ -910,10 +920,18 @@ label {
 /* Make Continue button full width in OTP modal */
 .wide-btn {
   width: 100%;
-  max-width: 320px;
+  max-width: 380px;
   display: block;
-  margin: 0 auto;
-  font-size: 1.12rem;
-  padding: 1rem 0;
-  border-radius: 10px;
+  margin: 1.2rem auto 1.2rem auto;
+  font-size: 1.15rem;
+  padding: 1.1rem 0;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(182, 147, 72, 0.10);
+  transition: background 0.2s, box-shadow 0.2s, transform 0.2s;
+}
+
+.wide-btn:hover:not(:disabled) {
+  background: #a5823d;
+  box-shadow: 0 4px 18px rgba(182, 147, 72, 0.16);
+  transform: translateY(-2px) scale(1.03);
 }

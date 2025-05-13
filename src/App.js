@@ -7,6 +7,13 @@ import { initializeApp } from 'firebase/app';
 import { getAuth, RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth';
 import { getAnalytics } from 'firebase/analytics';
 import SHA512 from 'crypto-js/sha512';
+
+// Add Google Fonts import
+const fontLink = document.createElement('link');
+fontLink.href = 'https://fonts.googleapis.com/css2?family=Marcellus&family=DM+Sans:wght@400;500;700&display=swap';
+fontLink.rel = 'stylesheet';
+document.head.appendChild(fontLink);
+
 // Your Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyC14KBARTHpl2H63sFT9y9fBKBV9lA8fvM",
@@ -38,9 +45,6 @@ const setupRecaptcha = () => {
   });
 };
 
-
-
-
 const App = () => {
    //const carouselRef = useRef(null);
    const [currentIndex, setCurrentIndex] = useState(0);
@@ -63,7 +67,6 @@ const App = () => {
    const [guestId, setGuestId] = useState(null);
    const [membershipId, setMembershipId] = useState(null);
    const [invoiceId, setInvoiceId] = useState(null);
-   //const [retryCount, setRetryCount] = useState(0);
   const [paymentResult, setPaymentResult] = useState(null);
   const [memberships, setMemberships] = useState([]);
   const [renderedCards, setRenderedCards] = useState([]);
@@ -125,7 +128,7 @@ const App = () => {
       if (!carouselRef.current) return;
 
       const container = carouselRef.current;
-      container.scrollLeft += 4;
+      container.scrollLeft += 0.5;
 
       // Near end? Clone more
       if (container.scrollLeft + container.clientWidth >= container.scrollWidth - 2) {
@@ -503,16 +506,16 @@ const handleClosePaymentResult = () => {
             {renderedCards.map((m, idx) => (
               <div className="service-style3 membership-type" key={`${m.id}-${idx}`} onClick={() => handleSelect(m)}>
                 <div>
-                  <h2>INR {m.price?.sales?.toLocaleString()}</h2>
+                  <h2 style={{ fontFamily: 'Marcellus, serif' ,color:"#555555" }}>INR {m.price?.sales?.toLocaleString()}</h2>
                 </div>
                 <div>
-                  <p>
+                  <p style={{ fontFamily: 'DM Sans, sans-serif' }}>
                     Discount on services - {m.discount_percentage || 50}%<br className="d-xs-none d-lg-block" />
                     Validity - {m.validity_in_months || 12} months
                   </p>
                 </div>
                 <div>
-                  <button className="select-location">Take Membership</button>
+                  <button className="select-location" style={{ fontFamily: 'DM Sans, sans-serif' }}>Take Membership</button>
                 </div>
               </div>
             ))}
