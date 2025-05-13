@@ -678,9 +678,8 @@ const capitalizeFirstLetter = (message) => {
               <>
                 <div className="modern-modal-header" style={{justifyContent: 'flex-start', gap: '0.7rem'}}>
                   <button className="modern-modal-back-icon-btn" onClick={() => setStep(1)} aria-label="Back" style={{margin: 0}}>
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#b69348" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <circle cx="12" cy="12" r="12" fill="#f8f3ed"/>
-                      <path d="M14.5 7.5L10 12l4.5 4.5" stroke="#b69348" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M15 19L8 12L15 5" stroke="#b69348" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                     </svg>
                   </button>
                   <h2 style={{flex: 1, textAlign: 'center', margin: 0}}>OTP Verification</h2>
