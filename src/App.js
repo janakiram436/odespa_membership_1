@@ -105,8 +105,10 @@ const App = () => {
           }
         );
         const data = response.data.memberships || [];
-        setMemberships(data);
-        setRenderedCards([...data, ...data]);
+        // Sort memberships by price from low to high
+        const sortedData = data.sort((a, b) => (a.price?.sales || 0) - (b.price?.sales || 0));
+        setMemberships(sortedData);
+        setRenderedCards([...sortedData, ...sortedData]);
         setError('');
         setRetryCount(0);
       } catch (err) {
