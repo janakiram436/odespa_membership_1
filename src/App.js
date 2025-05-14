@@ -520,7 +520,7 @@ const capitalizeFirstLetter = (message) => {
 
   return (
     <div className="membership-section">
-      <h1 className="heading">Your Perfect Package Ode Spa Membership</h1>
+      <h1 className="heading" style={{ fontFamily: 'Marcellus, serif' ,color:"#555555" }}>Your Perfect Package Ode Spa Membership</h1>
 
       {loading ? (
         <div className="center-spinner">
@@ -667,9 +667,9 @@ const capitalizeFirstLetter = (message) => {
             <span className="modern-modal-close" onClick={handleCloseModal}>&#10006;</span>
             <div className="modern-modal-header">
               
-              <h2>User Details</h2>
+              <h2 style={{ fontFamily: 'Marcellus, serif' ,color:"#555555" }}>User Details</h2>
             </div>
-            <div className="modern-modal-details">
+            <div className="modern-modal-details" style={{ fontFamily: 'DM Sans, sans-serif' }}>
               <div className="modern-modal-row"><span>Name:</span> <strong>{guestInfo?.firstName} {guestInfo?.lastName}</strong></div>
               <div className="modern-modal-row"><span>Phone:</span> <strong>{guestInfo?.phone?.includes('+91') ? guestInfo.phone.replace('+91', '').trim() : guestInfo?.phone}</strong></div>
               <div className="modern-modal-row"><span>Selected Membership:</span> <strong>{guestInfo?.membership}</strong></div>
@@ -681,6 +681,7 @@ const capitalizeFirstLetter = (message) => {
               className="modern-modal-confirm" 
               onClick={() => fetchPayment(guestInfo)}
               disabled={isProcessingPayment}
+              style={{ fontFamily: 'DM Sans, sans-serif' }}
             >
               {isProcessingPayment ? (
                 <div className="button-spinner"></div>
@@ -697,10 +698,10 @@ const capitalizeFirstLetter = (message) => {
             <span className="modern-modal-close" onClick={handleCloseModal}>&#10006;</span>
             {step === 1 && (
               <>
-                <div className="modern-modal-header">
+                <div className="modern-modal-header" style={{ fontFamily: 'Marcellus, serif' ,color:"#555555" }}>
                   <h2>Enter Mobile Number</h2>
                 </div>
-                <div className="modern-modal-details">
+                <div className="modern-modal-details" style={{ fontFamily: 'DM Sans, sans-serif' }}>
                   <input
                     type="tel"
                     className="modern-modal-input"
@@ -714,6 +715,7 @@ const capitalizeFirstLetter = (message) => {
                   className="modern-modal-confirm" 
                   onClick={sendOtp}
                   disabled={isSendingOtp}
+                  style={{ fontFamily: 'DM Sans, sans-serif' }}
                 >
                   {isSendingOtp ? (
                     <div className="button-spinner"></div>
@@ -729,7 +731,7 @@ const capitalizeFirstLetter = (message) => {
                   <button className="modern-modal-back-icon-btn" onClick={() => setStep(1)} aria-label="Back" style={{margin: 0}}>
                     &#8592;
                   </button>
-                  <h2 style={{flex: 1, textAlign: 'center', margin: 0}}>OTP Verification</h2>
+                  <h2 style={{flex: 1, textAlign: 'center', margin: 0, fontFamily: 'Marcellus, serif' ,color:"#555555"}}>OTP Verification</h2>
                 </div>
                 <div className="modern-modal-details">
                   <input
@@ -746,6 +748,7 @@ const capitalizeFirstLetter = (message) => {
                     className="modern-modal-confirm" 
                     onClick={verifyOtp} 
                     disabled={otp.length !== 6 || isVerifyingOtp}
+                    style={{ fontFamily: 'DM Sans, sans-serif' }}
                   >
                     {isVerifyingOtp ? (
                       <div className="button-spinner"></div>
@@ -757,10 +760,10 @@ const capitalizeFirstLetter = (message) => {
             )}
             {otpVerified && showGuestForm && !guestInfo && (
               <>
-                <div className="modern-modal-header">
+                <div className="modern-modal-header" style={{ fontFamily: 'Marcellus, serif' ,color:"#555555" }}>
                   <h2>Create Account</h2>
                 </div>
-                <div className="modern-modal-details">
+                <div className="modern-modal-details" style={{ fontFamily: 'DM Sans, sans-serif' }}>
                   <input
                     className="modern-modal-input"
                     placeholder="First Name"
@@ -794,6 +797,7 @@ const capitalizeFirstLetter = (message) => {
                   className="modern-modal-confirm" 
                   onClick={createGuest}
                   disabled={isCreatingGuest}
+                  style={{ fontFamily: 'DM Sans, sans-serif' }}
                 >
                   {isCreatingGuest ? (
                     <div className="button-spinner"></div>
