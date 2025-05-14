@@ -243,6 +243,15 @@ body {
   transition: color 0.3s ease;
 }
 
+.arrow-icon-1 {
+  font-size: 24px;
+  color: #888;
+  transition: color 0.3s ease;
+}
+.arrow:hover .arrow-icon-1{
+  color: #b69348;
+}
+
 /* OTP Modal Styles */
 .otp-modal {
   position: fixed;
@@ -686,6 +695,7 @@ label {
   border-radius: 50%;
   background: #f8f3ed;
   border: 1.5px solid #e0e0e0;
+  
   cursor: pointer;
   transition: box-shadow 0.2s, transform 0.2s, background 0.2s;
   margin-right: 0.5rem;

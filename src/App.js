@@ -518,6 +518,14 @@ const capitalizeFirstLetter = (message) => {
   return message.charAt(0).toUpperCase() + message.slice(1).toLowerCase();
 };
 
+// Add keyboard event handler for Enter key
+const handleKeyPress = (e, action) => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    action();
+  }
+};
+
   return (
     <div className="membership-section">
       <h1 className="heading" style={{ fontFamily: 'Marcellus, serif' ,color:"#555555" }}>Your Perfect Package Ode Spa Membership</h1>
@@ -708,6 +716,7 @@ const capitalizeFirstLetter = (message) => {
                     placeholder="Enter phone number"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
+                    onKeyPress={(e) => handleKeyPress(e, sendOtp)}
                     maxLength={10}
                     style={{marginBottom: '1.2rem'}} />
                 </div>
@@ -729,7 +738,7 @@ const capitalizeFirstLetter = (message) => {
               <>
                 <div className="modern-modal-header" style={{justifyContent: 'flex-start', gap: '0.7rem'}}>
                   <button className="modern-modal-back-icon-btn" onClick={() => setStep(1)} aria-label="Back" style={{margin: 0}}>
-                  <FiArrowLeft className="arrow-icon" />
+                  <FiArrowLeft className="arrow-icon-1" />
                   </button>
                   <h2 style={{flex: 1, textAlign: 'center', margin: 0, fontFamily: 'Marcellus, serif' ,color:"#555555"}}>OTP Verification</h2>
                 </div>
@@ -740,6 +749,7 @@ const capitalizeFirstLetter = (message) => {
                     placeholder="Enter OTP"
                     value={otp}
                     onChange={(e) => setOtp(e.target.value)}
+                    onKeyPress={(e) => handleKeyPress(e, () => otp.length === 6 && !isVerifyingOtp && verifyOtp())}
                     maxLength={6}
                     style={{marginBottom: '1.2rem'}} />
                 </div>
@@ -768,12 +778,14 @@ const capitalizeFirstLetter = (message) => {
                     className="modern-modal-input"
                     placeholder="First Name"
                     value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)} />
+                    onChange={(e) => setFirstName(e.target.value)}
+                    onKeyPress={(e) => handleKeyPress(e, () => firstName && lastName && gender && createGuest())} />
                   <input
                     className="modern-modal-input"
                     placeholder="Last Name"
                     value={lastName}
-                    onChange={(e) => setLastName(e.target.value)} />
+                    onChange={(e) => setLastName(e.target.value)}
+                    onKeyPress={(e) => handleKeyPress(e, () => firstName && lastName && gender && createGuest())} />
                   <div style={{marginBottom: '1.2rem'}}>
                     <label style={{marginRight: '1.5rem'}}>
                       <input
