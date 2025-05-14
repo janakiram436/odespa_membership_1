@@ -729,7 +729,7 @@ const capitalizeFirstLetter = (message) => {
               <>
                 <div className="modern-modal-header" style={{justifyContent: 'flex-start', gap: '0.7rem'}}>
                   <button className="modern-modal-back-icon-btn" onClick={() => setStep(1)} aria-label="Back" style={{margin: 0}}>
-                    &#8592;
+                  <FiArrowLeft className="arrow-icon" />
                   </button>
                   <h2 style={{flex: 1, textAlign: 'center', margin: 0, fontFamily: 'Marcellus, serif' ,color:"#555555"}}>OTP Verification</h2>
                 </div>
