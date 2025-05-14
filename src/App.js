@@ -263,7 +263,7 @@ const App = () => {
     const paymentData = {
       key: '26sF13CI',
       txnid: invoiceId, //'TXN' + Math.random().toString(36).substring(7),
-      amount: "1",//guestDetails.price,
+      amount: guestDetails.price,
       productinfo: guestDetails.membership,
       firstname: guestDetails.firstName,
       email: '',
@@ -431,7 +431,7 @@ const fetchInvoiceDetails = async (invoiceId) => {
 
     const response = await fetch(url, options);
     const data = await response.json();
-
+    console.log(data)
     if (data.invoice && data.invoice.guest) {
       setGuestInfo({
         firstName: data.invoice.guest.first_name,
