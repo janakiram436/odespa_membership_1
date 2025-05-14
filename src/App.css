@@ -248,7 +248,8 @@ body {
   color: #888;
   transition: color 0.3s ease;
 }
-.arrow:hover .arrow-icon-1{
+.modern-modal-back-icon-btn:hover .arrow-icon-1,
+.modern-modal-back-icon-btn:active .arrow-icon-1 {
   color: #b69348;
 }
 
@@ -278,6 +279,7 @@ body {
 
 .close-cross {
   position: absolute;
+  margin-top: 1rem;
   top: 1rem;
   right: 1rem;
   cursor: pointer;
@@ -704,7 +706,7 @@ label {
 .modern-modal-back-icon-btn:focus,
 .modern-modal-back-icon-btn:hover {
   box-shadow: 0 4px 16px rgba(182, 147, 72, 0.13);
-  background: #b69348;
+  background: #f8f3ed;
   outline: none;
 }
 
