@@ -1007,6 +1007,9 @@ label {
 }
 
 .modern-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   text-align: center;
   margin-bottom: 1.5rem;
 }
@@ -1192,8 +1195,6 @@ label {
     justify-content: space-between;
     width: 100%;
     gap: 0.5rem;
-    margin-bottom: 1.2rem;
-    padding-bottom: 0.3rem;
     
   }
   .modern-modal-header h2 {

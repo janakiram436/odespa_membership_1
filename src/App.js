@@ -867,14 +867,12 @@ const handleKeyPress = (e, action) => {
             )}
             {step === 2 && !otpVerified && (
               <>
-                <div className="modern-modal-header" style={{justifyContent: 'flex-start', gap: '0.7rem'}}>
+                <div className="modern-modal-header" >
                   <button className="modern-modal-back-icon-btn" onClick={() => setStep(1)} aria-label="Back" style={{margin: 0}}>
                   <FiArrowLeft className="arrow-icon-1" />
                   </button>
-                  <div style={{display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.7rem'}}>
                   <h2 style={{textAlign: 'center',fontFamily: 'Marcellus, serif' ,color:'#555555'}}>OTP Verification</h2>
                   <span className="modern-modal-close" onClick={handleCloseModal}>&#10006;</span>
-                  </div>
                 </div>
                 <div className="modern-modal-details">
                   <input
