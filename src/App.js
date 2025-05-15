@@ -754,10 +754,10 @@ const handleKeyPress = (e, action) => {
       {showOTPModal && guestInfo && (
         <div className="modern-modal">
           <div className="modern-modal-card animate-modal-in">
-            <span className="modern-modal-close" onClick={handleCloseModal}>&#10006;</span>
             <div className="modern-modal-header">
               
               <h2 style={{ fontFamily: 'Marcellus, serif' ,color:"#555555" }}>User Details</h2>
+              <span className="modern-modal-close" onClick={handleCloseModal}>&#10006;</span>
             </div>
             <div className="modern-modal-details" style={{ fontFamily: 'DM Sans, sans-serif' }}>
               <div className="modern-modal-row"><span>Name:</span> <strong>{guestInfo?.firstName} {guestInfo?.lastName}</strong></div>
@@ -871,7 +871,7 @@ const handleKeyPress = (e, action) => {
                   <button className="modern-modal-back-icon-btn" onClick={() => setStep(1)} aria-label="Back" style={{margin: 0}}>
                   <FiArrowLeft className="arrow-icon-1" />
                   </button>
-                  <h2 style={{flex: 1, textAlign: 'center', margin: 0, fontFamily: 'Marcellus, serif' ,color:'#555555'}}>OTP Verification</h2>
+                  <h2 style={{flex: 1, textAlign: 'center', marginLeft: "2rem", fontFamily: 'Marcellus, serif' ,color:'#555555'}}>OTP Verification</h2>
                   <span className="modern-modal-close" onClick={handleCloseModal}>&#10006;</span>
                 </div>
                 <div className="modern-modal-details">

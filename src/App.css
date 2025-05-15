@@ -115,25 +115,31 @@ body {
   transition: all 0.3s ease;
   cursor: pointer;
   flex: 0 0 auto;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.service-style3.membership-type:hover {
+.service-style3.membership-type:hover,
+.service-style3.membership-type:active {
   background: #b69348;
   transform: translateY(-5px);
   box-shadow: 0 8px 24px rgba(0,0,0,0.18);
 }
 
 .service-style3.membership-type:hover h2,
-.service-style3.membership-type:hover p {
+.service-style3.membership-type:hover p,
+.service-style3.membership-type:active h2,
+.service-style3.membership-type:active p {
   color: #fff;
 }
 
-.service-style3.membership-type:hover .select-location {
+.service-style3.membership-type:hover .select-location,
+.service-style3.membership-type:active .select-location {
   background: #fff;
   color: #b69348;
 }
 
-.service-style3.membership-type:hover .select-location:hover {
+.service-style3.membership-type:hover .select-location:hover,
+.service-style3.membership-type:active .select-location:active {
   background: #f8f3ed;
 }
 
@@ -193,10 +199,12 @@ body {
   text-transform: uppercase;
   font-weight: 500;
   transition: all 0.3s ease;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.select-location:hover {
-  background: #a07d32;
+.select-location:hover,
+.select-location:active {
+  background: #b69348;
   transform: translateY(-2px);
 }
 
@@ -216,12 +224,14 @@ body {
   z-index: 2;
   transition: all 0.3s ease;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  -webkit-tap-highlight-color: transparent;
 }
 
 .arrow:hover,
 .arrow:active {
   background: #b69348;
   border-color: #b69348;
+  transform: translateY(-50%) scale(1.1);
 }
 
 .arrow:hover .arrow-icon,
@@ -639,9 +649,11 @@ label {
   box-shadow: 0 2px 8px rgba(182, 147, 72, 0.08);
   transition: background 0.2s, transform 0.2s;
   margin-top: 0.8rem;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.modern-modal-confirm:hover {
+.modern-modal-confirm:hover,
+.modern-modal-confirm:active {
   background-color: #b69348;
   transform: translateY(-2px) scale(1.03);
 }
@@ -711,12 +723,15 @@ label {
   cursor: pointer;
   box-shadow: 0 2px 8px rgba(182, 147, 72, 0.08);
   transition: background 0.2s, color 0.2s, border 0.2s, box-shadow 0.2s;
+  -webkit-tap-highlight-color: transparent;
 }
-.modern-modal-back:hover {
+.modern-modal-back:hover,
+.modern-modal-back:active {
   background: #fffbe6;
-  color: #a07d32;
-  border-color: #a07d32;
+  color: #b69348;
+  border-color: #b69348;
   box-shadow: 0 4px 16px rgba(182, 147, 72, 0.13);
+  transform: translateY(-2px);
 }
 
 .modern-modal-back-icon {
@@ -736,16 +751,18 @@ label {
   border-radius: 50%;
   background: #f8f3ed;
   border: 1.5px solid #e0e0e0;
-  
   cursor: pointer;
   transition: box-shadow 0.2s, transform 0.2s, background 0.2s;
   margin-right: 0.5rem;
   padding: 0;
+  -webkit-tap-highlight-color: transparent;
 }
 .modern-modal-back-icon-btn:focus,
-.modern-modal-back-icon-btn:hover {
+.modern-modal-back-icon-btn:hover,
+.modern-modal-back-icon-btn:active {
   box-shadow: 0 4px 16px rgba(182, 147, 72, 0.13);
   background: #f8f3ed;
+  transform: scale(1.1);
   outline: none;
 }
 
@@ -869,11 +886,14 @@ label {
   font-weight: 600;
   cursor: pointer;
   margin-top: 1.2rem;
-  transition: background 0.2s;
+  transition: background 0.2s, transform 0.2s;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.modern-payment-result-btn:hover {
+.modern-payment-result-btn:hover,
+.modern-payment-result-btn:active {
   background-color: #b69348;
+  transform: translateY(-2px) scale(1.03);
 }
 
 /* OTP Verification Modal Styles */
@@ -965,10 +985,13 @@ label {
   font-weight: 500;
   cursor: pointer;
   transition: all 0.3s ease;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.verify-btn:hover:not(:disabled) {
+.verify-btn:hover:not(:disabled),
+.verify-btn:active:not(:disabled) {
   background: #b69348;
+  transform: translateY(-2px);
 }
 
 .verify-btn:disabled {
@@ -1005,9 +1028,11 @@ label {
   border-radius: 12px;
   box-shadow: 0 2px 12px rgba(182, 147, 72, 0.10);
   transition: background 0.2s, box-shadow 0.2s, transform 0.2s;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.wide-btn:hover:not(:disabled) {
+.wide-btn:hover:not(:disabled),
+.wide-btn:active:not(:disabled) {
   background-color: #b69348;
   box-shadow: 0 4px 18px rgba(182, 147, 72, 0.16);
   transform: translateY(-2px) scale(1.03);
@@ -1145,7 +1170,7 @@ label {
   .modern-modal-card {
     position: relative !important;
     left: 0 !important;
-    top: -10vh !important;
+    top: -8rem !important;
     transform: none !important;
     width: calc(100vw - 60px) !important;
     max-width: calc(100vw - 60px) !important;
@@ -1215,6 +1240,7 @@ label {
     background: #f8f3ed !important;
     box-shadow: 0 1.5px 6px rgba(182, 147, 72, 0.04);
     transition: border 0.2s, box-shadow 0.2s;
+    color: #6D6D6D;
   }
   .modern-modal-input:focus {
     border-color: #b69348 !important;
@@ -1311,6 +1337,7 @@ label {
     height: 28px !important;
     min-width: 28px !important;
     min-height: 28px !important;
+    padding-top: 0.5rem;
   }
   .modern-modal-back-icon-btn .arrow-icon-1 {
     font-size: 0.9rem !important;
