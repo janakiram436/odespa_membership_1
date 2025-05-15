@@ -105,8 +105,10 @@ const App = () => {
           }
         );
         const data = response.data.memberships || [];
-        setMemberships(data);
-        setRenderedCards([...data, ...data]);
+        // Sort memberships by price from low to high
+        const sortedData = data.sort((a, b) => (a.price?.sales || 0) - (b.price?.sales || 0));
+        setMemberships(sortedData);
+        setRenderedCards([...sortedData]);
         setError('');
         setRetryCount(0);
       } catch (err) {
@@ -703,11 +705,11 @@ const handleKeyPress = (e, action) => {
       {showOTPModal && !guestInfo && (step === 1 || (step === 2 && !otpVerified) || (otpVerified && showGuestForm && !guestInfo)) && (
         <div className="modern-modal">
           <div className="modern-modal-card animate-modal-in">
-            <span className="modern-modal-close" onClick={handleCloseModal}>&#10006;</span>
             {step === 1 && (
               <>
-                <div className="modern-modal-header" style={{ fontFamily: 'Marcellus, serif' ,color:"#555555" }}>
+                <div className="modern-modal-header" style={{ fontFamily: 'Marcellus, serif' ,color:'#555555' }}>
                   <h2>Enter Mobile Number</h2>
+                  <span className="modern-modal-close" onClick={handleCloseModal}>&#10006;</span>
                 </div>
                 <div className="modern-modal-details" style={{ fontFamily: 'DM Sans, sans-serif' }}>
                   <input
@@ -740,7 +742,8 @@ const handleKeyPress = (e, action) => {
                   <button className="modern-modal-back-icon-btn" onClick={() => setStep(1)} aria-label="Back" style={{margin: 0}}>
                   <FiArrowLeft className="arrow-icon-1" />
                   </button>
-                  <h2 style={{flex: 1, textAlign: 'center', margin: 0, fontFamily: 'Marcellus, serif' ,color:"#555555"}}>OTP Verification</h2>
+                  <h2 style={{flex: 1, textAlign: 'center', margin: 0, fontFamily: 'Marcellus, serif' ,color:'#555555'}}>OTP Verification</h2>
+                  <span className="modern-modal-close" onClick={handleCloseModal}>&#10006;</span>
                 </div>
                 <div className="modern-modal-details">
                   <input
@@ -753,7 +756,6 @@ const handleKeyPress = (e, action) => {
                     maxLength={6}
                     style={{marginBottom: '1.2rem'}} />
                 </div>
-               
                   <button 
                     className="modern-modal-confirm" 
                     onClick={verifyOtp} 
@@ -770,8 +772,9 @@ const handleKeyPress = (e, action) => {
             )}
             {otpVerified && showGuestForm && !guestInfo && (
               <>
-                <div className="modern-modal-header" style={{ fontFamily: 'Marcellus, serif' ,color:"#555555" }}>
+                <div className="modern-modal-header" style={{ fontFamily: 'Marcellus, serif' ,color:'#555555' }}>
                   <h2>Create Account</h2>
+                  <span className="modern-modal-close" onClick={handleCloseModal}>&#10006;</span>
                 </div>
                 <div className="modern-modal-details" style={{ fontFamily: 'DM Sans, sans-serif' }}>
                   <input
