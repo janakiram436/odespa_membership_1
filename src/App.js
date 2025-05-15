@@ -871,8 +871,10 @@ const handleKeyPress = (e, action) => {
                   <button className="modern-modal-back-icon-btn" onClick={() => setStep(1)} aria-label="Back" style={{margin: 0}}>
                   <FiArrowLeft className="arrow-icon-1" />
                   </button>
-                  <h2 style={{flex: 1, textAlign: 'center', marginLeft: "2rem", fontFamily: 'Marcellus, serif' ,color:'#555555'}}>OTP Verification</h2>
+                  <div style={{display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.7rem'}}>
+                  <h2 style={{textAlign: 'center',fontFamily: 'Marcellus, serif' ,color:'#555555'}}>OTP Verification</h2>
                   <span className="modern-modal-close" onClick={handleCloseModal}>&#10006;</span>
+                  </div>
                 </div>
                 <div className="modern-modal-details">
                   <input
