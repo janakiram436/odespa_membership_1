@@ -1155,7 +1155,7 @@ label {
     padding: 2.2rem 1.2rem 1.7rem 1.2rem !important;
     background: linear-gradient(135deg, #fff 80%, #f8f3ed 100%) !important;
     box-shadow: 0 8px 32px rgba(44, 62, 80, 0.18), 0 2px 8px rgba(182, 147, 72, 0.10) !important;
-    border: 1.5px solid #f0e8d9 !important;
+    border: 1.2px solid #f0e8d9 !important;
     display: flex;
     flex-direction: column;
     align-items: center;

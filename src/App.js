@@ -79,6 +79,8 @@ const App = () => {
   const [isCreatingGuest, setIsCreatingGuest] = useState(false);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [isTakingMembership, setIsTakingMembership] = useState({});
+  const [phoneError, setPhoneError] = useState('');
+  const [otpError, setOtpError] = useState('');
   const carouselRef = useRef(null);
   const scrollInterval = useRef(null);
   const MAX_RETRIES = 3;
@@ -108,11 +110,7 @@ const App = () => {
         // Sort memberships by price from low to high
         const sortedData = data.sort((a, b) => (a.price?.sales || 0) - (b.price?.sales || 0));
         setMemberships(sortedData);
-<<<<<<< HEAD
         setRenderedCards([...sortedData]);
-=======
-        setRenderedCards([...sortedData, ...sortedData]);
->>>>>>> 10322fa67035acaa0f03ee11f40fc4dbdc7d92a5
         setError('');
         setRetryCount(0);
       } catch (err) {
@@ -204,9 +202,41 @@ const App = () => {
     }, 1000);
   };
 
+  const validatePhoneNumber = (number) => {
+    if (!number) {
+      setPhoneError('Phone number is required');
+      return false;
+    }
+    if (!/^\d+$/.test(number)) {
+      setPhoneError('Phone number should contain only digits');
+      return false;
+    }
+    if (number.length !== 10) {
+      setPhoneError('Phone number should be 10 digits');
+      return false;
+    }
+    setPhoneError('');
+    return true;
+  };
+
+  const handlePhoneChange = (e) => {
+    const value = e.target.value;
+    if (value.length <= 10) {
+      setPhone(value);
+      // Remove real-time validation
+      if (phoneError) {
+        setPhoneError('');
+      }
+    }
+  };
+
   const sendOtp = async () => {
+    if (!validatePhoneNumber(phone)) {
+      return;
+    }
     try {
       setIsSendingOtp(true);
+      setOtpError(''); // Clear any previous errors
       if (!window.recaptchaVerifier) {
         setupRecaptcha();
       }
@@ -217,10 +247,19 @@ const App = () => {
       setStep(2);
     } catch (err) {
       console.error("Error in OTP sending", err);
+      let errorMessage = 'Failed to send OTP. Please try again.';
+      
       if (err.code === 'auth/captcha-check-failed') {
+        errorMessage = 'Verification failed. Please try again.';
         window.recaptchaVerifier = null;
         setupRecaptcha();
+      } else if (err.code === 'auth/invalid-phone-number') {
+        errorMessage = 'Invalid phone number format. Please check and try again.';
+      } else if (err.code === 'auth/too-many-requests') {
+        errorMessage = 'Too many attempts. Please try again later.';
       }
+      
+      setOtpError(errorMessage);
     } finally {
       setIsSendingOtp(false);
     }
@@ -716,21 +755,70 @@ const handleKeyPress = (e, action) => {
                   <span className="modern-modal-close" onClick={handleCloseModal}>&#10006;</span>
                 </div>
                 <div className="modern-modal-details" style={{ fontFamily: 'DM Sans, sans-serif' }}>
-                  <input
-                    type="tel"
-                    className="modern-modal-input"
-                    placeholder="Enter phone number"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    onKeyPress={(e) => handleKeyPress(e, sendOtp)}
-                    maxLength={10}
-                    style={{marginBottom: '1.2rem'}} />
+                  <div style={{ position: 'relative', width: '100%' }}>
+                    <input
+                      type="tel"
+                      className="modern-modal-input"
+                      placeholder="Enter phone number"
+                      value={phone}
+                      onChange={handlePhoneChange}
+                      onKeyPress={(e) => handleKeyPress(e, sendOtp)}
+                      maxLength={10}
+                      style={{
+                        marginBottom: phoneError ? '0.5rem' : '1.2rem',
+                        borderColor: phoneError ? '#ff4d4f' : '#d9d9d9'
+                      }} 
+                    />
+                    {phoneError && (
+                      <div style={{
+                        color: '#ff4d4f',
+                        fontSize: '0.875rem',
+                        marginBottom: '1.2rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem'
+                      }}>
+                        <i className="fas fa-exclamation-circle"></i>
+                        {phoneError}
+                      </div>
+                    )}
+                    {otpError && (
+                      <div style={{
+                        backgroundColor: '#fff2f0',
+                        border: '1px solid #ffccc7',
+                        borderRadius: '6px',
+                        padding: '12px 16px',
+                        marginBottom: '1.2rem',
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        gap: '12px'
+                      }}>
+                        <i className="fas fa-exclamation-circle" style={{
+                          color: '#ff4d4f',
+                          fontSize: '16px',
+                          marginTop: '2px'
+                        }}></i>
+                        <div style={{
+                          color: '#ff4d4f',
+                          fontSize: '0.875rem',
+                          lineHeight: '1.5',
+                          fontFamily: 'DM Sans, sans-serif'
+                        }}>
+                          {otpError}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
                 <button 
                   className="modern-modal-confirm" 
                   onClick={sendOtp}
                   disabled={isSendingOtp}
-                  style={{ fontFamily: 'DM Sans, sans-serif' }}
+                  style={{ 
+                    fontFamily: 'DM Sans, sans-serif',
+                    opacity: isSendingOtp ? 0.5 : 1,
+                    cursor: isSendingOtp ? 'not-allowed' : 'pointer'
+                  }}
                 >
                   {isSendingOtp ? (
                     <div className="button-spinner"></div>
