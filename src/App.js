@@ -796,7 +796,7 @@ const handleKeyPress = (e, action) => {
                     <input
                       type="tel"
                       className="modern-modal-input"
-                      placeholder="Enter phone number"
+                      placeholder="eg: 9876543210"
                       value={phone}
                       onChange={handlePhoneChange}
                       onKeyPress={(e) => handleKeyPress(e, sendOtp)}
