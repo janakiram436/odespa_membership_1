@@ -1291,9 +1291,9 @@ label {
 }
 
 @media screen and (max-width: 400px) {
-  .modern-modal-card {
+  /* .modern-modal-card {
     width: 60vw !important;
-  }
+  } */
   .modern-modal-card[style*="maxWidth: 380"] {
     width: 88vw !important;
     max-width: 88vw !important;
