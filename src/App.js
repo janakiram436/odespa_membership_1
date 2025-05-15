@@ -603,12 +603,44 @@ const handleKeyPress = (e, action) => {
             onTouchEnd={() => setTimeout(() => setIsAutoScrolling(true), 5000)}
           >
             {renderedCards.map((m, idx) => (
-              <div className="service-style3 membership-type" key={`${m.id}-${idx}`}>
+              <div 
+                className="service-style3 membership-type" 
+                key={`${m.id}-${idx}`}
+                style={{
+                  transition: 'all 0.3s ease',
+                  cursor: 'pointer',
+                  position: 'relative',
+                  overflow: 'hidden'
+                }}
+                onTouchStart={(e) => {
+                  e.currentTarget.style.transform = 'scale(1.02)';
+                  e.currentTarget.style.boxShadow = '0 8px 16px rgba(0,0,0,0.1)';
+                }}
+                onTouchEnd={(e) => {
+                  e.currentTarget.style.transform = 'scale(1)';
+                  e.currentTarget.style.boxShadow = 'none';
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'scale(1.02)';
+                  e.currentTarget.style.boxShadow = '0 8px 16px rgba(0,0,0,0.1)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'scale(1)';
+                  e.currentTarget.style.boxShadow = 'none';
+                }}
+              >
                 <div>
-                  <h2 style={{ fontFamily: 'Marcellus, serif' ,color:"#555555" }}>INR {m.price?.sales?.toLocaleString()}</h2>
+                  <h2 style={{ 
+                    fontFamily: 'Marcellus, serif',
+                    color: "#555555",
+                    transition: 'all 0.3s ease'
+                  }}>INR {m.price?.sales?.toLocaleString()}</h2>
                 </div>
                 <div>
-                  <p style={{ fontFamily: 'DM Sans, sans-serif' }}>
+                  <p style={{ 
+                    fontFamily: 'DM Sans, sans-serif',
+                    transition: 'all 0.3s ease'
+                  }}>
                     Discount on services - {m.discount_percentage || 50}%<br className="d-xs-none d-lg-block" />
                     Validity - {m.validity_in_months || 12} months
                   </p>
@@ -616,7 +648,12 @@ const handleKeyPress = (e, action) => {
                 <div>
                   <button 
                     className="select-location" 
-                    style={{ fontFamily: 'DM Sans, sans-serif' }} 
+                    style={{ 
+                      fontFamily: 'DM Sans, sans-serif',
+                      transition: 'all 0.3s ease',
+                      position: 'relative',
+                      overflow: 'hidden'
+                    }} 
                     onClick={() => handleSelect(m)}
                     disabled={isTakingMembership[m.id]}
                   >
