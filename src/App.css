@@ -206,7 +206,7 @@ body {
   align-items: center;
   justify-content: center;
   width: 100%;
-  max-width: 200px;
+  max-width: 250px;
   margin: 0 auto;
 }
 
@@ -410,7 +410,7 @@ label {
     padding: 14px 0;
   }
   .service-style3.membership-type {
-    min-width: 200px;
+    min-width: 240px;
     max-width: 240px;
     padding: 1rem 0.7rem;
     margin: 0 auto;
@@ -508,6 +508,7 @@ label {
     font-size: 0.85rem;
     padding: 0.5rem 0.7rem;
     border-radius: 5px;
+    margin-bottom: 5% !important;
   }
   .modern-modal-card {
     padding: 0.7rem 0.3rem 0.7rem 0.3rem;
@@ -1212,7 +1213,7 @@ label {
     flex-direction: column;
     align-items: center;
     transition: box-shadow 0.2s, transform 0.2s;
-    top: -15rem !important;
+    top: -12rem !important;
   }
   .modern-modal-header {
     display: flex;

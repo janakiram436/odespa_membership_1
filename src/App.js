@@ -91,64 +91,25 @@ const App = () => {
     setupRecaptcha();
   }, []);
 
-  // Reset scroll position when component mounts or refreshes
   useEffect(() => {
     const resetScroll = () => {
       if (carouselRef.current) {
-        // Force layout recalculation
-        carouselRef.current.style.display = 'none';
-        void carouselRef.current.offsetHeight; // Force reflow
-        carouselRef.current.style.display = '';
-
-        // Multiple scroll reset attempts
-        carouselRef.current.scrollLeft = 0;
-        carouselRef.current.scrollTo({
-          left: 0,
-          behavior: 'auto'
+        requestAnimationFrame(() => {
+          carouselRef.current.scrollLeft = 0;
         });
-
-        // Force scroll reset after a small delay
-        setTimeout(() => {
-          if (carouselRef.current) {
-            carouselRef.current.scrollLeft = 0;
-            carouselRef.current.scrollTo({
-              left: 0,
-              behavior: 'auto'
-            });
-          }
-        }, 50);
       }
     };
-
-    // Reset on mount
+  
     resetScroll();
-
-    // Reset on window resize (handles orientation changes on mobile)
     window.addEventListener('resize', resetScroll);
-
-    // Reset on visibility change (handles when app comes back to foreground)
-    document.addEventListener('visibilitychange', resetScroll);
-
-    // Reset on page load/refresh
     window.addEventListener('load', resetScroll);
-
-    // Reset on beforeunload (handles page refresh)
-    window.addEventListener('beforeunload', resetScroll);
-
-    // Reset on touchstart (mobile-specific)
-    document.addEventListener('touchstart', () => {
-      if (carouselRef.current) {
-        carouselRef.current.scrollLeft = 0;
-      }
-    }, { once: true });
-
+  
     return () => {
       window.removeEventListener('resize', resetScroll);
-      document.removeEventListener('visibilitychange', resetScroll);
       window.removeEventListener('load', resetScroll);
-      window.removeEventListener('beforeunload', resetScroll);
     };
   }, []);
+  
 
   // Fetch membership data
   useEffect(() => {
@@ -168,7 +129,7 @@ const App = () => {
         // Sort memberships by price from low to high
         const sortedData = data.sort((a, b) => (a.price?.sales || 0) - (b.price?.sales || 0));
         setMemberships(sortedData);
-        setRenderedCards([...sortedData, ...sortedData]);
+        setRenderedCards([...sortedData]);
         setError('');
         setRetryCount(0);
         
@@ -227,19 +188,27 @@ const App = () => {
   useEffect(() => {
     if (!renderedCards.length || !isAutoScrolling) return;
 
+    const scrollSpeed = window.innerWidth <= 768 ? 0.5 : 1; // Slower scroll on mobile
     scrollInterval.current = setInterval(() => {
       if (!carouselRef.current) return;
 
       const container = carouselRef.current;
-      const cardWidth = container.querySelector('.service-style3.membership-type').offsetWidth;
-      const gap = 32;
+      const cardWidth = container.querySelector('.service-style3.membership-type')?.offsetWidth || 0;
+      const gap = window.innerWidth <= 768 ? 18 : 32; // Smaller gap on mobile
       const scrollAmount = cardWidth + gap;
 
-      container.scrollLeft += 1;
+      // Smooth scrolling
+      container.scrollLeft += scrollSpeed;
 
-      // Near end? Clone more
+      // Check if we need to add more cards
       if (container.scrollLeft + container.clientWidth >= container.scrollWidth - scrollAmount) {
-        setRenderedCards(prev => [...prev, ...memberships]);
+        setRenderedCards(prev => {
+          // Only add new cards if we haven't already added them
+          const lastCard = prev[prev.length - 1];
+          const firstNewCard = memberships[0];
+          if (lastCard?.id === firstNewCard?.id) return prev;
+          return [...prev, ...memberships];
+        });
       }
     }, 20);
 
@@ -250,24 +219,31 @@ const App = () => {
     if (!carouselRef.current) return;
     
     const container = carouselRef.current;
-    const cardWidth = container.querySelector('.service-style3.membership-type').offsetWidth;
-    const gap = 32; // Gap between cards
+    const cardWidth = container.querySelector('.service-style3.membership-type')?.offsetWidth || 0;
+    const gap = window.innerWidth <= 768 ? 18 : 32; // Smaller gap on mobile
     const scrollAmount = cardWidth + gap;
     
     const currentScroll = container.scrollLeft;
     const targetScroll = direction === "left" 
-      ? currentScroll - scrollAmount 
+      ? Math.max(0, currentScroll - scrollAmount)
       : currentScroll + scrollAmount;
     
+    // Smooth scroll to target position
     container.scrollTo({
       left: targetScroll,
       behavior: 'smooth'
     });
     
-    // Check if we need to add more cards
+    // Add more cards if needed
     if (direction === "right" && 
         container.scrollLeft + container.clientWidth >= container.scrollWidth - scrollAmount) {
-      setRenderedCards(prev => [...prev, ...memberships]);
+      setRenderedCards(prev => {
+        // Only add new cards if we haven't already added them
+        const lastCard = prev[prev.length - 1];
+        const firstNewCard = memberships[0];
+        if (lastCard?.id === firstNewCard?.id) return prev;
+        return [...prev, ...memberships];
+      });
     }
   };
 
@@ -669,6 +645,52 @@ const handleKeyPress = (e, action) => {
     action();
   }
 };
+
+// Center the first card in the carousel on mobile view
+useEffect(() => {
+  if (!carouselRef.current || !renderedCards.length) return;
+
+  const isMobile = window.innerWidth <= 768;
+  if (!isMobile) return;
+
+  const firstCard = carouselRef.current.querySelector('.service-style3.membership-type');
+  if (!firstCard) return;
+
+  const container = carouselRef.current;
+  const cardWidth = firstCard.offsetWidth;
+  const containerWidth = container.offsetWidth;
+  const gap = 18; // gap for mobile
+
+  // Center the first card
+  const scrollTo = Math.max(0, (cardWidth + gap) / 2 - containerWidth / 2);
+  
+  // Use requestAnimationFrame for smoother initial positioning
+  requestAnimationFrame(() => {
+    container.scrollLeft = scrollTo;
+  });
+}, [renderedCards]);
+
+// Handle window resize
+useEffect(() => {
+  const handleResize = () => {
+    if (!carouselRef.current) return;
+    
+    // Reset scroll position on resize
+    requestAnimationFrame(() => {
+      carouselRef.current.scrollLeft = 0;
+    });
+  };
+
+  window.addEventListener('resize', handleResize);
+  return () => window.removeEventListener('resize', handleResize);
+}, []);
+
+// Ensure all cards are rendered initially
+useEffect(() => {
+  if (memberships.length > 0) {
+    setRenderedCards([...memberships]);
+  }
+}, [memberships]);
 
   return (
     <div className="membership-section">
