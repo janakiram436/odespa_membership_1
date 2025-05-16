@@ -44,7 +44,7 @@ const setupRecaptcha = () => {
     }
   });
 };
-
+//All code
 const App = () => {
    //const carouselRef = useRef(null);
    const [currentIndex, setCurrentIndex] = useState(0);
