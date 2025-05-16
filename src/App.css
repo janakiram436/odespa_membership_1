@@ -1213,7 +1213,7 @@ label {
     flex-direction: column;
     align-items: center;
     transition: box-shadow 0.2s, transform 0.2s;
-    top: -9rem !important;
+    top: -8rem !important;
   }
   .modern-modal-header {
     display: flex;
