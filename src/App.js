@@ -14,7 +14,7 @@ fontLink.href = 'https://fonts.googleapis.com/css2?family=Marcellus&family=DM+Sa
 fontLink.rel = 'stylesheet';
 document.head.appendChild(fontLink);
 
-// Your Firebase config
+// Your Firebase config 
 const firebaseConfig = {
   apiKey: "AIzaSyC14KBARTHpl2H63sFT9y9fBKBV9lA8fvM",
   authDomain: "ode-spa-webapp.firebaseapp.com",
@@ -69,11 +69,9 @@ const App = () => {
    const [invoiceId, setInvoiceId] = useState(null);
   const [paymentResult, setPaymentResult] = useState(null);
   const [memberships, setMemberships] = useState([]);
-  const [renderedCards, setRenderedCards] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [retryCount, setRetryCount] = useState(0);
-  const [isAutoScrolling, setIsAutoScrolling] = useState(true);
   const [isSendingOtp, setIsSendingOtp] = useState(false);
   const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
   const [isCreatingGuest, setIsCreatingGuest] = useState(false);
@@ -82,7 +80,6 @@ const App = () => {
   const [phoneError, setPhoneError] = useState('');
   const [otpError, setOtpError] = useState('');
   const carouselRef = useRef(null);
-  const scrollInterval = useRef(null);
   const MAX_RETRIES = 3;
   const RETRY_DELAY = 2000;
 
@@ -129,7 +126,6 @@ const App = () => {
         // Sort memberships by price from low to high
         const sortedData = data.sort((a, b) => (a.price?.sales || 0) - (b.price?.sales || 0));
         setMemberships(sortedData);
-        setRenderedCards([...sortedData]);
         setError('');
         setRetryCount(0);
         
@@ -184,72 +180,8 @@ const App = () => {
     fetchMemberships();
   }, [retryCount]);
 
-  // Infinite scroll logic
-  useEffect(() => {
-    if (!renderedCards.length || !isAutoScrolling) return;
-
-    const scrollSpeed = window.innerWidth <= 768 ? 0.5 : 1; // Slower scroll on mobile
-    scrollInterval.current = setInterval(() => {
-      if (!carouselRef.current) return;
-
-      const container = carouselRef.current;
-      const cardWidth = container.querySelector('.service-style3.membership-type')?.offsetWidth || 0;
-      const gap = window.innerWidth <= 768 ? 18 : 32; // Smaller gap on mobile
-      const scrollAmount = cardWidth + gap;
-
-      // Smooth scrolling
-      container.scrollLeft += scrollSpeed;
-
-      // Check if we need to add more cards
-      if (container.scrollLeft + container.clientWidth >= container.scrollWidth - scrollAmount) {
-        setRenderedCards(prev => {
-          // Only add new cards if we haven't already added them
-          const lastCard = prev[prev.length - 1];
-          const firstNewCard = memberships[0];
-          if (lastCard?.id === firstNewCard?.id) return prev;
-          return [...prev, ...memberships];
-        });
-      }
-    }, 20);
-
-    return () => clearInterval(scrollInterval.current);
-  }, [renderedCards, memberships, isAutoScrolling]);
-
-  const scrollCarousel = (direction) => {
-    if (!carouselRef.current) return;
-    
-    const container = carouselRef.current;
-    const cardWidth = container.querySelector('.service-style3.membership-type')?.offsetWidth || 0;
-    const gap = window.innerWidth <= 768 ? 18 : 32; // Smaller gap on mobile
-    const scrollAmount = cardWidth + gap;
-    
-    const currentScroll = container.scrollLeft;
-    const targetScroll = direction === "left" 
-      ? Math.max(0, currentScroll - scrollAmount)
-      : currentScroll + scrollAmount;
-    
-    // Smooth scroll to target position
-    container.scrollTo({
-      left: targetScroll,
-      behavior: 'smooth'
-    });
-    
-    // Add more cards if needed
-    if (direction === "right" && 
-        container.scrollLeft + container.clientWidth >= container.scrollWidth - scrollAmount) {
-      setRenderedCards(prev => {
-        // Only add new cards if we haven't already added them
-        const lastCard = prev[prev.length - 1];
-        const firstNewCard = memberships[0];
-        if (lastCard?.id === firstNewCard?.id) return prev;
-        return [...prev, ...memberships];
-      });
-    }
-  };
-
   const handleUserInteraction = () => {
-    setIsAutoScrolling(false);
-    setTimeout(() => setIsAutoScrolling(true), 5000); // resume after 5s
+    // No autoscrolling logic needed
   };
 
   //   alert(`Selected membership: ${membership.name}`);
@@ -322,7 +254,7 @@ const App = () => {
       setStep(2);
     } catch (err) {
       console.error("Error in OTP sending", err);
-      let errorMessage = 'Failed to send OTP. Please try again.';
+      let errorMessage = 'Failed to send OTP. Please try again.'; // failed to send otp 
       
       if (err.code === 'auth/captcha-check-failed') {
         errorMessage = 'Verification failed. Please try again.';
@@ -648,7 +580,7 @@ const handleKeyPress = (e, action) => {
 
 // Center the first card in the carousel on mobile view
 useEffect(() => {
-  if (!carouselRef.current || !renderedCards.length) return;
+  if (!carouselRef.current || !memberships.length) return;
 
   const isMobile = window.innerWidth <= 768;
   if (!isMobile) return;
@@ -668,7 +600,7 @@ useEffect(() => {
   requestAnimationFrame(() => {
     container.scrollLeft = scrollTo;
   });
-}, [renderedCards]);
+}, [memberships]);
 
 // Handle window resize
 useEffect(() => {
@@ -688,7 +620,7 @@ useEffect(() => {
 // Ensure all cards are rendered initially
 useEffect(() => {
   if (memberships.length > 0) {
-    setRenderedCards([...memberships]);
+    setMemberships(memberships);
   }
 }, [memberships]);
 
@@ -707,23 +639,12 @@ useEffect(() => {
       ) : (
         <div
           className="carousel-container"
-          onMouseEnter={() => setIsAutoScrolling(false)}
-          onMouseLeave={() => setIsAutoScrolling(true)}
         >
-          <button className="arrow left" onClick={() => {
-            scrollCarousel('left');
-            handleUserInteraction();
-          }}>
-            <FiArrowLeft className="arrow-icon" />
-          </button>
-
           <div
             className="carousel-wrapper"
             ref={carouselRef}
-            onTouchStart={() => setIsAutoScrolling(false)}
-            onTouchEnd={() => setTimeout(() => setIsAutoScrolling(true), 5000)}
           >
-            {renderedCards.map((m, idx) => (
+            {memberships.slice(0, 3).map((m, idx) => (
               <div 
                 className="service-style3 membership-type" 
                 key={`${m.id}-${idx}`}
@@ -735,7 +656,6 @@ useEffect(() => {
                 }}
                 onClick={() => handleSelect(m)}
                 onTouchStart={(e) => {
-                  // Only prevent default if it's a touch on the card itself, not the button
                   if (e.target === e.currentTarget) {
                     e.preventDefault();
                   }
@@ -743,7 +663,6 @@ useEffect(() => {
                   e.currentTarget.style.boxShadow = '0 8px 16px rgba(0,0,0,0.1)';
                 }}
                 onTouchEnd={(e) => {
-                  // Only prevent default if it's a touch on the card itself, not the button
                   if (e.target === e.currentTarget) {
                     e.preventDefault();
                   }
@@ -810,12 +729,31 @@ useEffect(() => {
               </div>
             ))}
           </div>
-
-          <button className="arrow right" onClick={() => {
-            scrollCarousel('right');
-            handleUserInteraction();
-          }}>
-            <FiArrowRight className="arrow-icon" />
+          <button 
+            className="view-all-details-btn"
+            onClick={() => window.open('https://www.odespa.com/membership.html', '_blank')}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)';
+              e.currentTarget.style.boxShadow = '0 8px 20px rgba(85, 85, 85, 0.2)';
+              e.currentTarget.style.backgroundColor = '#b69564';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0) scale(1)';
+              e.currentTarget.style.boxShadow = '0 4px 12px rgba(85, 85, 85, 0.15)';
+              e.currentTarget.style.backgroundColor = '#555555';
+            }}
+            onTouchStart={(e) => {
+              e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)';
+              e.currentTarget.style.boxShadow = '0 8px 20px rgba(85, 85, 85, 0.2)';
+              e.currentTarget.style.backgroundColor = '#b69564';
+            }}
+            onTouchEnd={(e) => {
+              e.currentTarget.style.transform = 'translateY(0) scale(1)';
+              e.currentTarget.style.boxShadow = '0 4px 12px rgba(85, 85, 85, 0.15)';
+              e.currentTarget.style.backgroundColor = '#555555';
+            }}
+          >
+            View All Details
           </button>
         </div>
       )}
