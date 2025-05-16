@@ -1196,7 +1196,7 @@ label {
     flex-direction: column;
     align-items: center;
     transition: box-shadow 0.2s, transform 0.2s;
-    top: -8rem !important;
+    top: -18rem !important;
   }
   .modern-modal-header {
     display: flex;
@@ -1361,5 +1361,30 @@ label {
   .modern-modal-details div[style*="marginBottom: 1.2rem"] label {
     font-size: 0.75rem !important;
     gap: 0.2rem !important;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .service-style3.membership-type .select-location {
+    font-size: 0.95rem;
+    padding: 0.8rem 1.2rem;
+    border-radius: 8px;
+    min-height: 44px; /* Minimum touch target size */
+    width: 100%;
+    max-width: 200px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  
+  .service-style3.membership-type {
+    padding: 1rem;
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
   }
 }

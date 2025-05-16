@@ -91,6 +91,64 @@ const App = () => {
     setupRecaptcha();
   }, []);
 
+  // Reset scroll position when component mounts or refreshes
+  useEffect(() => {
+    const resetScroll = () => {
+      if (carouselRef.current) {
+        // Force layout recalculation
+        carouselRef.current.style.display = 'none';
+        void carouselRef.current.offsetHeight; // Force reflow
+        carouselRef.current.style.display = '';
+
+        // Multiple scroll reset attempts
+        carouselRef.current.scrollLeft = 0;
+        carouselRef.current.scrollTo({
+          left: 0,
+          behavior: 'auto'
+        });
+
+        // Force scroll reset after a small delay
+        setTimeout(() => {
+          if (carouselRef.current) {
+            carouselRef.current.scrollLeft = 0;
+            carouselRef.current.scrollTo({
+              left: 0,
+              behavior: 'auto'
+            });
+          }
+        }, 50);
+      }
+    };
+
+    // Reset on mount
+    resetScroll();
+
+    // Reset on window resize (handles orientation changes on mobile)
+    window.addEventListener('resize', resetScroll);
+
+    // Reset on visibility change (handles when app comes back to foreground)
+    document.addEventListener('visibilitychange', resetScroll);
+
+    // Reset on page load/refresh
+    window.addEventListener('load', resetScroll);
+
+    // Reset on beforeunload (handles page refresh)
+    window.addEventListener('beforeunload', resetScroll);
+
+    // Reset on touchstart (mobile-specific)
+    document.addEventListener('touchstart', () => {
+      if (carouselRef.current) {
+        carouselRef.current.scrollLeft = 0;
+      }
+    }, { once: true });
+
+    return () => {
+      window.removeEventListener('resize', resetScroll);
+      document.removeEventListener('visibilitychange', resetScroll);
+      window.removeEventListener('load', resetScroll);
+      window.removeEventListener('beforeunload', resetScroll);
+    };
+  }, []);
 
   // Fetch membership data
   useEffect(() => {
@@ -110,9 +168,45 @@ const App = () => {
         // Sort memberships by price from low to high
         const sortedData = data.sort((a, b) => (a.price?.sales || 0) - (b.price?.sales || 0));
         setMemberships(sortedData);
-        setRenderedCards([...sortedData]);
+        setRenderedCards([...sortedData, ...sortedData]);
         setError('');
         setRetryCount(0);
+        
+        // Aggressive scroll reset after data load
+        const resetScrollWithRetry = (attempts = 5) => {
+          if (attempts <= 0) return;
+          
+          if (carouselRef.current) {
+            // Force layout recalculation
+            carouselRef.current.style.display = 'none';
+            void carouselRef.current.offsetHeight; // Force reflow
+            carouselRef.current.style.display = '';
+
+            // Multiple scroll reset attempts
+            carouselRef.current.scrollLeft = 0;
+            carouselRef.current.scrollTo({
+              left: 0,
+              behavior: 'auto'
+            });
+          }
+          
+          // Try again after a short delay
+          setTimeout(() => resetScrollWithRetry(attempts - 1), 100);
+        };
+        
+        // Initial reset
+        resetScrollWithRetry();
+
+        // Additional reset after a longer delay
+        setTimeout(() => {
+          if (carouselRef.current) {
+            carouselRef.current.scrollLeft = 0;
+            carouselRef.current.scrollTo({
+              left: 0,
+              behavior: 'auto'
+            });
+          }
+        }, 500);
       } catch (err) {
         console.error("Error fetching memberships:", err);
         if (err.response?.status === 429 && retryCount < MAX_RETRIES) {
@@ -186,6 +280,9 @@ const App = () => {
   // };
 
   const handleSelect = (membership) => {
+    // Prevent multiple rapid clicks
+    if (isTakingMembership[membership.id]) return;
+    
     setIsTakingMembership(prev => ({ ...prev, [membership.id]: true }));
     setSelectedIndex(memberships.indexOf(membership));
     setShowOTPModal(true);
@@ -197,6 +294,8 @@ const App = () => {
     setGuestInfo(null);
     setMembershipId(membership.id);
     handleUserInteraction();
+    
+    // Reset the taking membership state after a delay
     setTimeout(() => {
       setIsTakingMembership(prev => ({ ...prev, [membership.id]: false }));
     }, 1000);
@@ -613,12 +712,15 @@ const handleKeyPress = (e, action) => {
                   overflow: 'hidden'
                 }}
                 onTouchStart={(e) => {
+                  e.preventDefault(); // Prevent default touch behavior
                   e.currentTarget.style.transform = 'scale(1.02)';
                   e.currentTarget.style.boxShadow = '0 8px 16px rgba(0,0,0,0.1)';
                 }}
                 onTouchEnd={(e) => {
+                  e.preventDefault(); // Prevent default touch behavior
                   e.currentTarget.style.transform = 'scale(1)';
                   e.currentTarget.style.boxShadow = 'none';
+                  handleSelect(m); // Call handleSelect on touch end
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.transform = 'scale(1.02)';
@@ -655,6 +757,17 @@ const handleKeyPress = (e, action) => {
                       overflow: 'hidden'
                     }} 
                     onClick={() => handleSelect(m)}
+                    onTouchStart={(e) => {
+                      e.preventDefault(); // Prevent default touch behavior
+                      e.currentTarget.style.transform = 'scale(1.02)';
+                      e.currentTarget.style.boxShadow = '0 8px 16px rgba(0,0,0,0.1)';
+                    }}
+                    onTouchEnd={(e) => {
+                      e.preventDefault(); // Prevent default touch behavior
+                      e.currentTarget.style.transform = 'scale(1)';
+                      e.currentTarget.style.boxShadow = 'none';
+                      handleSelect(m); // Call handleSelect on touch end
+                    }}
                     disabled={isTakingMembership[m.id]}
                   >
                     {isTakingMembership[m.id] ? (
