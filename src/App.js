@@ -711,16 +711,22 @@ const handleKeyPress = (e, action) => {
                   position: 'relative',
                   overflow: 'hidden'
                 }}
+                onClick={() => handleSelect(m)}
                 onTouchStart={(e) => {
-                  e.preventDefault(); // Prevent default touch behavior
+                  // Only prevent default if it's a touch on the card itself, not the button
+                  if (e.target === e.currentTarget) {
+                    e.preventDefault();
+                  }
                   e.currentTarget.style.transform = 'scale(1.02)';
                   e.currentTarget.style.boxShadow = '0 8px 16px rgba(0,0,0,0.1)';
                 }}
                 onTouchEnd={(e) => {
-                  e.preventDefault(); // Prevent default touch behavior
+                  // Only prevent default if it's a touch on the card itself, not the button
+                  if (e.target === e.currentTarget) {
+                    e.preventDefault();
+                  }
                   e.currentTarget.style.transform = 'scale(1)';
                   e.currentTarget.style.boxShadow = 'none';
-                  handleSelect(m); // Call handleSelect on touch end
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.transform = 'scale(1.02)';
@@ -756,17 +762,19 @@ const handleKeyPress = (e, action) => {
                       position: 'relative',
                       overflow: 'hidden'
                     }} 
-                    onClick={() => handleSelect(m)}
+                    onClick={(e) => {
+                      e.stopPropagation(); // Prevent card click
+                      handleSelect(m);
+                    }}
                     onTouchStart={(e) => {
-                      e.preventDefault(); // Prevent default touch behavior
+                      e.stopPropagation(); // Prevent card touch
                       e.currentTarget.style.transform = 'scale(1.02)';
-                      e.currentTarget.style.boxShadow = '0 8px 16px rgba(0,0,0,0.1)';
+                      e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
                     }}
                     onTouchEnd={(e) => {
-                      e.preventDefault(); // Prevent default touch behavior
+                      e.stopPropagation(); // Prevent card touch
                       e.currentTarget.style.transform = 'scale(1)';
                       e.currentTarget.style.boxShadow = 'none';
-                      handleSelect(m); // Call handleSelect on touch end
                     }}
                     disabled={isTakingMembership[m.id]}
                   >
