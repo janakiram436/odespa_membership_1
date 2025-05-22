@@ -44,7 +44,7 @@ const setupRecaptcha = () => {
     }
   });
 };
-
+//All code
 const App = () => {
    //const carouselRef = useRef(null);
    const [currentIndex, setCurrentIndex] = useState(0);
@@ -186,7 +186,7 @@ const App = () => {
 
   //   alert(`Selected membership: ${membership.name}`);
   // };
-
+//everthing  is fine 
   const handleSelect = (membership) => {
     // Prevent multiple rapid clicks
     if (isTakingMembership[membership.id]) return;
@@ -254,7 +254,7 @@ const App = () => {
       setStep(2);
     } catch (err) {
       console.error("Error in OTP sending", err);
-      let errorMessage = 'Failed to send OTP. Please try again.';
+      let errorMessage = 'Failed to send OTP. Please try again.'; // failed to send otp 
       
       if (err.code === 'auth/captcha-check-failed') {
         errorMessage = 'Verification failed. Please try again.';
