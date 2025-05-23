@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { FiArrowLeft, FiArrowRight } from "react-icons/fi";
 import "./App.css";
@@ -7,14 +7,47 @@ import { initializeApp } from 'firebase/app';
 import { getAuth, RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth';
 import { getAnalytics } from 'firebase/analytics';
 import SHA512 from 'crypto-js/sha512';
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
+import Slider from "react-slick";
 
-// Add Google Fonts import
+// ================ STYLES AND FONTS ================
+// Add Google Fonts for consistent typography
 const fontLink = document.createElement('link');
 fontLink.href = 'https://fonts.googleapis.com/css2?family=Marcellus&family=DM+Sans:wght@400;500;700&display=swap';
 fontLink.rel = 'stylesheet';
 document.head.appendChild(fontLink);
 
-// Your Firebase config 
+// ================ CUSTOM COMPONENTS ================
+// Custom arrow components for the carousel
+const PrevArrow = ({ className, style, onClick }) => {
+  return (
+    <button
+      className="custom-arrow prev-arrow"
+      style={{ ...style }}
+      onClick={onClick}
+      aria-label="Previous"
+    >
+      <FiArrowLeft size={24} />
+    </button>
+  );
+};
+
+const NextArrow = ({ className, style, onClick }) => {
+  return (
+    <button
+      className="custom-arrow next-arrow"
+      style={{ ...style }}
+      onClick={onClick}
+      aria-label="Next"
+    >
+      <FiArrowRight size={24} />
+    </button>
+  );
+};
+
+// ================ FIREBASE CONFIGURATION ================
+// Firebase configuration for authentication and analytics
 const firebaseConfig = {
   apiKey: "AIzaSyC14KBARTHpl2H63sFT9y9fBKBV9lA8fvM",
   authDomain: "ode-spa-webapp.firebaseapp.com",
@@ -25,90 +58,124 @@ const firebaseConfig = {
   measurementId: "G-TC6MK1Y6FV"
 };
 
-// Initialize Firebase
+// Initialize Firebase services
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const analytics = getAnalytics(app);
 
-// Configure reCAPTCHA
+// ================ RECAPTCHA SETUP ================
+/**
+ * Sets up reCAPTCHA verification for phone authentication
+ * Creates an invisible reCAPTCHA verifier instance
+ */
 const setupRecaptcha = () => {
   window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
     'size': 'invisible',
     'callback': (response) => {
-      // reCAPTCHA solved, allow signInWithPhoneNumber.
       console.log('reCAPTCHA verified');
     },
     'expired-callback': () => {
-      // Response expired. Ask user to solve reCAPTCHA again.
       console.log('reCAPTCHA expired');
     }
   });
 };
-//All code
+
+// ================ MAIN APP COMPONENT ================
 const App = () => {
-   //const carouselRef = useRef(null);
-   const [currentIndex, setCurrentIndex] = useState(0);
-   const [selectedIndex, setSelectedIndex] = useState(null);
-   //const [isAutoScrolling, setIsAutoScrolling] = useState(true);
-   //const [memberships, setMemberships] = useState([]);
-   //const [loading, setLoading] = useState(true);
-   //const [error, setError] = useState('');
-   const [showOTPModal, setShowOTPModal] = useState(false);
-   const [step, setStep] = useState(1);
-   const [phone, setPhone] = useState('');
-   const [otp, setOtp] = useState('');
-   const [confirmationResult, setConfirmationResult] = useState(null);
-   const [otpVerified, setOtpVerified] = useState(false);
-   const [showGuestForm, setShowGuestForm] = useState(false);
-   const [guestInfo, setGuestInfo] = useState(null);
-   const [firstName, setFirstName] = useState('');
-   const [lastName, setLastName] = useState('');
-   const [gender, setGender] = useState(null);
-   const [guestId, setGuestId] = useState(null);
-   const [membershipId, setMembershipId] = useState(null);
-   const [invoiceId, setInvoiceId] = useState(null);
-  const [paymentResult, setPaymentResult] = useState(null);
-  const [memberships, setMemberships] = useState([]);
+  // ================ STATE MANAGEMENT ================
+  // UI State
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [selectedIndex, setSelectedIndex] = useState(null);
+  const [showOTPModal, setShowOTPModal] = useState(false);
+  const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [retryCount, setRetryCount] = useState(0);
+  // Track if mobile view
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  // Authentication State
+  const [phone, setPhone] = useState('');
+  const [otp, setOtp] = useState('');
+  const [confirmationResult, setConfirmationResult] = useState(null);
+  const [otpVerified, setOtpVerified] = useState(false);
+  const [phoneError, setPhoneError] = useState('');
+  const [otpError, setOtpError] = useState('');
+
+  // Guest Information State
+  const [showGuestForm, setShowGuestForm] = useState(false);
+  const [guestInfo, setGuestInfo] = useState(null);
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [gender, setGender] = useState(null);
+  const [guestId, setGuestId] = useState(null);
+
+  // Membership and Payment State
+  const [membershipId, setMembershipId] = useState(null);
+  const [invoiceId, setInvoiceId] = useState(null);
+  const [paymentResult, setPaymentResult] = useState(null);
+  const [memberships, setMemberships] = useState([]);
+
+  // Loading States
   const [isSendingOtp, setIsSendingOtp] = useState(false);
   const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
   const [isCreatingGuest, setIsCreatingGuest] = useState(false);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [isTakingMembership, setIsTakingMembership] = useState({});
-  const [phoneError, setPhoneError] = useState('');
-  const [otpError, setOtpError] = useState('');
-  const carouselRef = useRef(null);
-  const MAX_RETRIES = 3;
-  const RETRY_DELAY = 2000;
 
-   // Initialize reCAPTCHA when component mounts
-   useEffect(() => {
+  // ================ CAROUSEL SETTINGS ================
+  const settings = {
+    dots: false,
+    infinite: true,
+    speed: 600,
+    cssEase: "ease-in-out",
+    autoplay: true,
+    autoplaySpeed: 4000,
+    slidesToShow: 3, // Default: Large screens
+    slidesToScroll: 1,
+    responsive: [
+      {
+        breakpoint: 1024,
+        settings: {
+          slidesToShow: 2,
+          slidesToScroll: 1,
+        },
+      },
+      {
+        breakpoint: 768,
+        settings: {
+          slidesToShow: 1,
+          slidesToScroll: 1,
+          arrows: false,
+          vertical: false,
+          verticalSwiping: false,
+          swipe: false,
+          touchMove: false,
+          draggable: false,
+          infinite: false,
+          autoplay: false,
+        },
+      },
+    ],
+    prevArrow: <PrevArrow />,
+    nextArrow: <NextArrow />
+  };
+  
+
+  // ================ EFFECTS ================
+  // Initialize reCAPTCHA on component mount
+  useEffect(() => {
     setupRecaptcha();
   }, []);
-
   useEffect(() => {
-    const resetScroll = () => {
-      if (carouselRef.current) {
-        requestAnimationFrame(() => {
-          carouselRef.current.scrollLeft = 0;
-        });
-      }
-    };
+    if (memberships.length > 0) {
+      setTimeout(() => {
+        window.dispatchEvent(new Event('resize'));
+      }, 500);
+    }
+  }, [memberships]);
   
-    resetScroll();
-    window.addEventListener('resize', resetScroll);
-    window.addEventListener('load', resetScroll);
-  
-    return () => {
-      window.removeEventListener('resize', resetScroll);
-      window.removeEventListener('load', resetScroll);
-    };
-  }, []);
-  
-
-  // Fetch membership data
+  // Fetch membership data from API
   useEffect(() => {
     const fetchMemberships = async () => {
       try {
@@ -117,58 +184,67 @@ const App = () => {
           {
             headers: {
               accept: "application/json",
-              Authorization:
-                "apikey 061fb3b3f6974acc828ced31bef595cca3f57e5bc194496785492e2b70362283",
+              Authorization:"apikey 061fb3b3f6974acc828ced31bef595cca3f57e5bc194496785492e2b70362283",
+
+                
             },
           }
         );
         const data = response.data.memberships || [];
-        // Sort memberships by price from low to high
         const sortedData = data.sort((a, b) => (a.price?.sales || 0) - (b.price?.sales || 0));
-        setMemberships(sortedData);
+        const enrichedData = sortedData.map((item) => {
+          const price = item.price?.sales;
+        
+          switch (price) {
+            case 15000:
+              return {
+                ...item,
+                validity_in_months: 6,
+                discount_percentage: 35
+              };
+            case 25000:
+              return {
+                ...item,
+                validity_in_months: 12,
+                discount_percentage: 50
+              };
+            case 35000:
+              return {
+                ...item,
+                validity_in_months: 18,
+                discount_percentage: 50
+              };
+            case 50000:
+              return {
+                ...item,
+                validity_in_months: 24,
+                discount_percentage: 50
+              };
+            case 65000:
+              return {
+                ...item,
+                validity_in_months: 36,
+                discount_percentage: 50
+              };
+            case 100000:
+              return {
+                ...item,
+                validity_in_months: 42,
+                discount_percentage: 50
+              };
+            default:
+              return item;
+          }
+        });
+        
+        setMemberships(enrichedData);
         setError('');
         setRetryCount(0);
-        
-        // Aggressive scroll reset after data load
-        const resetScrollWithRetry = (attempts = 5) => {
-          if (attempts <= 0) return;
-          
-          if (carouselRef.current) {
-            // Force layout recalculation
-            carouselRef.current.style.display = 'none';
-            void carouselRef.current.offsetHeight; // Force reflow
-            carouselRef.current.style.display = '';
-
-            // Multiple scroll reset attempts
-            carouselRef.current.scrollLeft = 0;
-            carouselRef.current.scrollTo({
-              left: 0,
-              behavior: 'auto'
-            });
-          }
-          
-          // Try again after a short delay
-          setTimeout(() => resetScrollWithRetry(attempts - 1), 100);
-        };
-        
-        // Initial reset
-        resetScrollWithRetry();
-
-        // Additional reset after a longer delay
-        setTimeout(() => {
-          if (carouselRef.current) {
-            carouselRef.current.scrollLeft = 0;
-            carouselRef.current.scrollTo({
-              left: 0,
-              behavior: 'auto'
-            });
-          }
-        }, 500);
       } catch (err) {
         console.error("Error fetching memberships:", err);
-        if (err.response?.status === 429 && retryCount < MAX_RETRIES) {
+        if (err.response?.status === 429 && retryCount < 3) {
           setRetryCount((prev) => prev + 1);
-          setTimeout(fetchMemberships, RETRY_DELAY * (retryCount + 1));
+          setTimeout(fetchMemberships, 2000 * (retryCount + 1));
         } else {
           setError("Failed to fetch memberships. Please try again later.");
         }
@@ -180,15 +256,67 @@ const App = () => {
     fetchMemberships();
   }, [retryCount]);
 
-  const handleUserInteraction = () => {
-    // No autoscrolling logic needed
-  };
+  // Load persisted data from localStorage
+  useEffect(() => {
+    const storedGuestInfo = localStorage.getItem('guestInfo');
+    const storedShowOTPModal = localStorage.getItem('showOTPModal');
+    if (storedGuestInfo) {
+      setGuestInfo(JSON.parse(storedGuestInfo));
+    }
+    if (storedShowOTPModal === 'true') {
+      setShowOTPModal(true);
+    }
+  }, []);
 
-  //   alert(`Selected membership: ${membership.name}`);
-  // };
-//everthing  is fine 
+  // Persist data to localStorage
+  useEffect(() => {
+    if (guestInfo) {
+      localStorage.setItem('guestInfo', JSON.stringify(guestInfo));
+    } else {
+      localStorage.removeItem('guestInfo');
+    }
+    localStorage.setItem('showOTPModal', showOTPModal ? 'true' : 'false');
+  }, [guestInfo, showOTPModal]);
+
+  // Handle payment result from URL parameters
+  useEffect(() => {
+    const handlePaymentResult = async () => {
+      const queryParams = new URLSearchParams(window.location.search);
+      const status = queryParams.get("status");
+      const error_message = queryParams.get("error_message");
+      const sisinvoiceid = queryParams.get("sisinvoiceid");
+      const productinfo = queryParams.get("productinfo");
+      const amount = queryParams.get("amount");
+
+      if (status) {
+        setPaymentResult({
+          status,
+          error_message,
+          sisinvoiceid,
+          productinfo,
+          amount,
+          invoiceStatus: sisinvoiceid === 'true' ? 'closed' : 'pending'
+        });
+        setShowOTPModal(false);
+      }
+    };
+
+    handlePaymentResult();
+  }, []);
+
+  // Update isMobile on resize
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // ================ EVENT HANDLERS ================
+  /**
+   * Handles membership selection and initiates the purchase flow
+   * @param {Object} membership - The selected membership object
+   */
   const handleSelect = (membership) => {
-    // Prevent multiple rapid clicks
     if (isTakingMembership[membership.id]) return;
     
     setIsTakingMembership(prev => ({ ...prev, [membership.id]: true }));
@@ -201,14 +329,17 @@ const App = () => {
     setShowGuestForm(false);
     setGuestInfo(null);
     setMembershipId(membership.id);
-    handleUserInteraction();
     
-    // Reset the taking membership state after a delay
     setTimeout(() => {
       setIsTakingMembership(prev => ({ ...prev, [membership.id]: false }));
     }, 1000);
   };
 
+  /**
+   * Validates phone number format
+   * @param {string} number - Phone number to validate
+   * @returns {boolean} - Whether the phone number is valid
+   */
   const validatePhoneNumber = (number) => {
     if (!number) {
       setPhoneError('Phone number is required');
@@ -226,24 +357,30 @@ const App = () => {
     return true;
   };
 
+  /**
+   * Handles phone number input changes
+   * @param {Event} e - Input change event
+   */
   const handlePhoneChange = (e) => {
     const value = e.target.value;
     if (value.length <= 10) {
       setPhone(value);
-      // Remove real-time validation
       if (phoneError) {
         setPhoneError('');
       }
     }
   };
 
+  /**
+   * Sends OTP to the provided phone number
+   */
   const sendOtp = async () => {
     if (!validatePhoneNumber(phone)) {
       return;
     }
     try {
       setIsSendingOtp(true);
-      setOtpError(''); // Clear any previous errors
+      setOtpError('');
       if (!window.recaptchaVerifier) {
         setupRecaptcha();
       }
@@ -254,7 +391,7 @@ const App = () => {
       setStep(2);
     } catch (err) {
       console.error("Error in OTP sending", err);
-      let errorMessage = 'Failed to send OTP. Please try again.'; // failed to send otp 
+      let errorMessage = 'Failed to send OTP. Please try again.';
       
       if (err.code === 'auth/captcha-check-failed') {
         errorMessage = 'Verification failed. Please try again.';
@@ -272,13 +409,14 @@ const App = () => {
     }
   };
 
-
+  /**
+   * Verifies the entered OTP
+   */
   const verifyOtp = async () => {
     try {
       setIsVerifyingOtp(true);
       await confirmationResult.confirm(otp);
       setOtpVerified(true);
-      // After OTP verification, check if guest exists
       const response = await axios.get(
         `https://api.zenoti.com/v1/guests/search?phone=${phone}`,
         {
@@ -297,24 +435,32 @@ const App = () => {
       }
     } catch (err) {
       console.error(err);
-      //alert('Incorrect OTP');
     } finally {
       setIsVerifyingOtp(false);
     }
   };
 
+  /**
+   * Generates hash for payment verification
+   * @param {Object} paymentData - Payment data object
+   * @param {string} salt - Salt for hash generation
+   * @returns {string} - Generated hash
+   */
   const generateHash = (paymentData, salt) => {
     const { key, txnid, amount, productinfo, firstname, email, phone, udf1 = '', udf2 = '', udf3 = '', udf4 = '', udf5 = '' } = paymentData;
     const hashString = `${key}|${txnid}|${amount}|${productinfo}|${firstname}|${email}|${udf1}|${udf2}|${udf3}|${udf4}|${udf5}||||||${salt}`;
     return SHA512(hashString).toString();
   };
 
-
+  /**
+   * Initiates payment process
+   * @param {Object} guestDetails - Guest details for payment
+   */
   const fetchPayment = (guestDetails) => {
     setIsProcessingPayment(true);
     const paymentData = {
       key: '26sF13CI',
-      txnid: invoiceId, //'TXN' + Math.random().toString(36).substring(7),
+      txnid: invoiceId,
       amount: guestDetails.price,
       productinfo: guestDetails.membership,
       firstname: guestDetails.firstName,
@@ -326,16 +472,12 @@ const App = () => {
       furl: "https://odespa-backend1.onrender.com/api/payu/failure",
     };
 
-
     const hash = generateHash(paymentData, paymentData.salt);
     paymentData.hash = hash;
-
 
     const form = document.createElement('form');
     form.action = 'https://secure.payu.in/_payment';
     form.method = 'POST';
-    //form.target = '_blank';
-
 
     for (const key in paymentData) {
       const input = document.createElement('input');
@@ -345,288 +487,198 @@ const App = () => {
       form.appendChild(input);
     }
 
-
     document.body.appendChild(form);
     form.submit();
   };
 
-const fetchGuestId = async () => {
-  try {
-    const response = await axios.get(
-      `https://api.zenoti.com/v1/guests/search?phone=${phone}`,
-      {
-        headers: {
-          Authorization: 'apikey 061fb3b3f6974acc828ced31bef595cca3f57e5bc194496785492e2b70362283',
-          accept: 'application/json',
-        },
+  /**
+   * Fetches guest ID from API
+   */
+  const fetchGuestId = async () => {
+    try {
+      const response = await axios.get(
+        `https://api.zenoti.com/v1/guests/search?phone=${phone}`,
+        {
+          headers: {
+            Authorization: 'apikey 061fb3b3f6974acc828ced31bef595cca3f57e5bc194496785492e2b70362283',
+            accept: 'application/json',
+          },
+        }
+      );
+      const guests = response.data.guests;
+      if (guests.length > 0) {
+        setGuestId(guests[0].id);
+        createInvoice(guests[0].id);
+      } else {
+        setShowGuestForm(true);
       }
-    );
-    const guests = response.data.guests;
-    if (guests.length > 0) {
-      setGuestId(guests[0].id);
-      //alert('Guest is present');
-      createInvoice(guests[0].id);
-    } else {
-      setShowGuestForm(true);
-      //alert('You don\'t have an account. Please create one.');
+    } catch (err) {
+      console.error('Error searching guest:', err);
     }
-  } catch (err) {
-    console.error('Error searching guest:', err);
-    if (err.response?.status === 429) {
-      //alert('Too many requests. Please try again in a few moments.');
-    } else {
-      //alert('Failed to search guest. Please try again.');
-    }
-  }
-};
+  };
 
-const createGuest = async () => {
-  try {
-    setIsCreatingGuest(true);
-    const payload = {
-      center_id: "92d41019-c790-4668-9158-a693e531c1a4",
-      personal_info: {
-        first_name: firstName,
-        last_name: lastName,
-        mobile_phone: {
-          country_code: 95,
-          number: phone
-        },
-        gender: gender === 1 ? 1 : 0
+  /**
+   * Creates a new guest account
+   */
+  const createGuest = async () => {
+    try {
+      setIsCreatingGuest(true);
+      const payload = {
+        center_id: "92d41019-c790-4668-9158-a693e531c1a4",
+        personal_info: {
+          first_name: firstName,
+          last_name: lastName,
+          mobile_phone: {
+            country_code: 95,
+            number: phone
+          },
+          gender: gender === 1 ? 1 : 0
+        }
+      };
+      const response = await axios.post(
+        'https://api.zenoti.com/v1/guests',
+        payload,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: 'apikey 061fb3b3f6974acc828ced31bef595cca3f57e5bc194496785492e2b70362283',
+          }
+        }
+      );
+      setGuestInfo(response.data);
+      setGuestId(response.data.id);
+      createInvoice(response.data.id);
+    } catch (err) {
+      console.error('Error creating guest:', err);
+    } finally {
+      setIsCreatingGuest(false);
+    }
+  };
+
+  /**
+   * Creates an invoice for the selected membership
+   * @param {string} guestId - ID of the guest
+   */
+  const createInvoice = async (guestId) => {
+    try {
+      if (!membershipId) {
+        throw new Error('No membership selected');
       }
-    };
-    const response = await axios.post(
-      'https://api.zenoti.com/v1/guests',
-      payload,
-      {
+
+      const payload = {
+        center_id: "92d41019-c790-4668-9158-a693e531c1a4",
+        membership_ids: membershipId,
+        user_id: guestId,
+      };
+
+      const response = await fetch('https://api.zenoti.com/v1/invoices/memberships', {
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: 'apikey 061fb3b3f6974acc828ced31bef595cca3f57e5bc194496785492e2b70362283',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (response.status === 429) {
+        throw new Error('RATE_LIMIT');
+      }
+
+      const data = await response.json();
+
+      if (data.success) {
+        setInvoiceId(data.invoice_id);
+        console.log('Invoice created with ID:', data.invoice_id);
+        fetchInvoiceDetails(data.invoice_id);
+      } else {
+        throw new Error(data.error?.message || 'Failed to create invoice');
+      }
+    } catch (err) {
+      console.error('Error creating invoice:', err);
+    }
+  };
+
+  /**
+   * Fetches invoice details from API
+   * @param {string} invoiceId - ID of the invoice
+   */
+  const fetchInvoiceDetails = async (invoiceId) => {
+    try {
+      const url = `https://api.zenoti.com/v1/invoices/${invoiceId}?expand=InvoiceItems&expand=Transactions`;
+      const options = {
+        method: 'GET',
+        headers: {
+          accept: 'application/json',
+          Authorization: 'apikey 061fb3b3f6974acc828ced31bef595cca3f57e5bc194496785492e2b70362283'
         }
+      };
+
+      const response = await fetch(url, options);
+      const data = await response.json();
+      if (data.invoice && data.invoice.guest) {
+        setGuestInfo({
+          firstName: data.invoice.guest.first_name,
+          lastName: data.invoice.guest.last_name,
+          phone: data.invoice.guest.mobile_phone,
+          membership: data.invoice.invoice_items[0].name,
+          netPrice: data.invoice.invoice_items[0].price.sales,
+          tax: data.invoice.invoice_items[0].price.tax,
+          price: data.invoice.invoice_items[0].price.final,
+        });
+        setShowOTPModal(true);
       }
-    );
-    setGuestInfo(response.data);
-    setGuestId(response.data.id);
-    //alert('Guest created successfully!');
-    createInvoice(response.data.id);
-  } catch (err) {
-    console.error('Error creating guest:', err);
-    if (err.response?.status === 429) {
-      //alert('Too many requests. Please try again in a few moments.');
-    } else {
-      //alert('Guest creation failed. Please try again.');
+    } catch (err) {
+      console.error('Error fetching invoice details:', err);
     }
-  } finally {
-    setIsCreatingGuest(false);
-  }
-};
+  };
 
-const createInvoice = async (guestId) => {
-  try {
-    if (!membershipId) {
-      throw new Error('No membership selected');
-    }
-
-    const payload = {
-      center_id: "92d41019-c790-4668-9158-a693e531c1a4",
-      membership_ids: membershipId,
-      user_id: guestId,
-    };
-
-    const response = await fetch('https://api.zenoti.com/v1/invoices/memberships', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: 'apikey 061fb3b3f6974acc828ced31bef595cca3f57e5bc194496785492e2b70362283',
-      },
-      body: JSON.stringify(payload),
-    });
-
-    if (response.status === 429) {
-      throw new Error('RATE_LIMIT');
-    }
-
-    const data = await response.json();
-
-    if (data.success) {
-      setInvoiceId(data.invoice_id);
-      console.log('Invoice created with ID:', data.invoice_id);
-      fetchInvoiceDetails(data.invoice_id);
-    } else {
-      throw new Error(data.error?.message || 'Failed to create invoice');
-    }
-  } catch (err) {
-    console.error('Error creating invoice:', err);
-    if (err.message === 'RATE_LIMIT') {
-      //alert('Too many requests. Please try again in a few moments.');
-       console.log(err.message)
-    } else if (err.message === 'No membership selected') {
-      //alert('Please select a membership first.');
-       console.log(err.message)
-    } else {
-      //alert('Invoice creation failed. Please try again.');
-      console.log(err)
-    }
-  }
-};
-
-const fetchInvoiceDetails = async (invoiceId) => {
-  try {
-    const url = `https://api.zenoti.com/v1/invoices/${invoiceId}?expand=InvoiceItems&expand=Transactions`;
-    const options = {
-      method: 'GET',
-      headers: {
-        accept: 'application/json',
-        Authorization: 'apikey 061fb3b3f6974acc828ced31bef595cca3f57e5bc194496785492e2b70362283'
-      }
-    };
-
-    const response = await fetch(url, options);
-    const data = await response.json();
-    console.log(data)
-    if (data.invoice && data.invoice.guest) {
-      setGuestInfo({
-        firstName: data.invoice.guest.first_name,
-        lastName: data.invoice.guest.last_name,
-        phone: data.invoice.guest.mobile_phone,
-        membership: data.invoice.invoice_items[0].name,
-        netPrice:data.invoice.invoice_items[0].price.sales,
-        tax:data.invoice.invoice_items[0].price.tax,
-        price:data.invoice.invoice_items[0].price.final,
-      });
-      setShowOTPModal(true);
-    }
-  } catch (err) {
-    console.error('Error fetching invoice details:', err);
-  }
-};
-
-// Load guestInfo and showOTPModal from localStorage on mount
-useEffect(() => {
-  const storedGuestInfo = localStorage.getItem('guestInfo');
-  const storedShowOTPModal = localStorage.getItem('showOTPModal');
-  if (storedGuestInfo) {
-    setGuestInfo(JSON.parse(storedGuestInfo));
-  }
-  if (storedShowOTPModal === 'true') {
-    setShowOTPModal(true);
-  }
-}, []);
-
-// Persist guestInfo and showOTPModal to localStorage when they change
-useEffect(() => {
-  if (guestInfo) {
-    localStorage.setItem('guestInfo', JSON.stringify(guestInfo));
-  } else {
+  // ================ UTILITY FUNCTIONS ================
+  /**
+   * Closes the OTP modal and clears guest info
+   */
+  const handleCloseModal = () => {
+    setShowOTPModal(false);
+    setGuestInfo(null);
     localStorage.removeItem('guestInfo');
-  }
-  localStorage.setItem('showOTPModal', showOTPModal ? 'true' : 'false');
-}, [guestInfo, showOTPModal]);
+    localStorage.setItem('showOTPModal', 'false');
+  };
 
-// When cancel icon is clicked, close modal and clear guestInfo from localStorage
-const handleCloseModal = () => {
-  setShowOTPModal(false);
-  setGuestInfo(null);
-  localStorage.removeItem('guestInfo');
-  localStorage.setItem('showOTPModal', 'false');
-};
+  /**
+   * Closes the payment result modal and clears URL parameters
+   */
+  const handleClosePaymentResult = () => {
+    setPaymentResult(null);
+    window.history.replaceState({}, document.title, window.location.pathname);
+  };
 
-// Add payment result handling
-useEffect(() => {
-  const handlePaymentResult = async () => {
-    const queryParams = new URLSearchParams(window.location.search);
-    const status = queryParams.get("status");
-    const error_message = queryParams.get("error_message");
-    const sisinvoiceid = queryParams.get("sisinvoiceid");
-    const productinfo = queryParams.get("productinfo");
-    const amount = queryParams.get("amount");
+  /**
+   * Capitalizes the first letter of a string
+   * @param {string} message - String to capitalize
+   * @returns {string} - Capitalized string
+   */
+  const capitalizeFirstLetter = (message) => {
+    if (!message) return "";
+    return message.charAt(0).toUpperCase() + message.slice(1).toLowerCase();
+  };
 
-    if (status) {
-      setPaymentResult({
-        status,
-        error_message,
-        sisinvoiceid,
-        productinfo,
-        amount,
-        invoiceStatus: sisinvoiceid === 'true' ? 'closed' : 'pending'
-      });
-      setShowOTPModal(false); // Hide OTP/User modal if pe
+  /**
+   * Handles keyboard events for form submission
+   * @param {Event} e - Keyboard event
+   * @param {Function} action - Action to perform on Enter key
+   */
+  const handleKeyPress = (e, action) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      action();
     }
   };
 
-  handlePaymentResult();
-}, []);
-
-// Close payment result modal
-const handleClosePaymentResult = () => {
-  setPaymentResult(null);
-  // Clear query params from URL
-  window.history.replaceState({}, document.title, window.location.pathname);
-};
-
-// Utility function to capitalize only the first letter of the message
-const capitalizeFirstLetter = (message) => {
-  if (!message) return "";
-  return message.charAt(0).toUpperCase() + message.slice(1).toLowerCase();
-};
-
-// Add keyboard event handler for Enter key
-const handleKeyPress = (e, action) => {
-  if (e.key === 'Enter') {
-    e.preventDefault();
-    action();
-  }
-};
-
-// Center the first card in the carousel on mobile view
-useEffect(() => {
-  if (!carouselRef.current || !memberships.length) return;
-
-  const isMobile = window.innerWidth <= 768;
-  if (!isMobile) return;
-
-  const firstCard = carouselRef.current.querySelector('.service-style3.membership-type');
-  if (!firstCard) return;
-
-  const container = carouselRef.current;
-  const cardWidth = firstCard.offsetWidth;
-  const containerWidth = container.offsetWidth;
-  const gap = 18; // gap for mobile
-
-  // Center the first card
-  const scrollTo = Math.max(0, (cardWidth + gap) / 2 - containerWidth / 2);
-  
-  // Use requestAnimationFrame for smoother initial positioning
-  requestAnimationFrame(() => {
-    container.scrollLeft = scrollTo;
-  });
-}, [memberships]);
-
-// Handle window resize
-useEffect(() => {
-  const handleResize = () => {
-    if (!carouselRef.current) return;
-    
-    // Reset scroll position on resize
-    requestAnimationFrame(() => {
-      carouselRef.current.scrollLeft = 0;
-    });
-  };
-
-  window.addEventListener('resize', handleResize);
-  return () => window.removeEventListener('resize', handleResize);
-}, []);
-
-// Ensure all cards are rendered initially
-useEffect(() => {
-  if (memberships.length > 0) {
-    setMemberships(memberships);
-  }
-}, [memberships]);
-
+  // ================ RENDER ================
   return (
     <div className="membership-section">
-      <h1 className="heading" style={{ fontFamily: 'Marcellus, serif' ,color:"#555555" }}>Your Perfect Package Ode Spa Membership</h1>
+      <h1 className="heading" style={{ fontFamily: 'Marcellus, serif', color: "#555555" }}>
+        Your Perfect Package Ode Spa Membership
+      </h1>
 
       {loading ? (
         <div className="center-spinner">
@@ -637,131 +689,181 @@ useEffect(() => {
       ) : error ? (
         <p>{error}</p>
       ) : (
-        <div
-          className="carousel-container"
-        >
-          <div
-            className="carousel-wrapper"
-            ref={carouselRef}
-          >
-            {memberships.slice(0, 3).map((m, idx) => (
-              <div 
-                className="service-style3 membership-type" 
-                key={`${m.id}-${idx}`}
-                style={{
-                  transition: 'all 0.3s ease',
-                  cursor: 'pointer',
-                  position: 'relative',
-                  overflow: 'hidden'
-                }}
-                onClick={() => handleSelect(m)}
-                onTouchStart={(e) => {
-                  if (e.target === e.currentTarget) {
-                    e.preventDefault();
-                  }
-                  e.currentTarget.style.transform = 'scale(1.02)';
-                  e.currentTarget.style.boxShadow = '0 8px 16px rgba(0,0,0,0.1)';
-                }}
-                onTouchEnd={(e) => {
-                  if (e.target === e.currentTarget) {
-                    e.preventDefault();
-                  }
-                  e.currentTarget.style.transform = 'scale(1)';
-                  e.currentTarget.style.boxShadow = 'none';
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'scale(1.02)';
-                  e.currentTarget.style.boxShadow = '0 8px 16px rgba(0,0,0,0.1)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'scale(1)';
-                  e.currentTarget.style.boxShadow = 'none';
-                }}
-              >
-                <div>
-                  <h2 style={{ 
-                    fontFamily: 'Marcellus, serif',
-                    color: "#555555",
-                    transition: 'all 0.3s ease'
-                  }}>INR {m.price?.sales?.toLocaleString()}</h2>
-                </div>
-                <div>
-                  <p style={{ 
-                    fontFamily: 'DM Sans, sans-serif',
-                    transition: 'all 0.3s ease'
-                  }}>
-                    Discount on services - {m.discount_percentage || 50}%<br className="d-xs-none d-lg-block" />
-                    Validity - {m.validity_in_months || 12} months
-                  </p>
-                </div>
-                <div>
-                  <button 
-                    className="select-location" 
-                    style={{ 
+        <div className="carousel-container">
+          {isMobile ? (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px', width: '100%' }}>
+              {memberships.map((m) => (
+                <div 
+                  className="service-style3 membership-type" 
+                  key={m.id}
+                  style={{
+                    transition: 'all 0.3s ease',
+                    cursor: 'pointer',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    width: '100%',
+                    maxWidth: '340px',
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                    margin: 0
+                  }}
+                  onClick={() => handleSelect(m)}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'scale(1.02)';
+                    e.currentTarget.style.boxShadow = '0 8px 16px rgba(0,0,0,0.1)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'scale(1)';
+                    e.currentTarget.style.boxShadow = 'none';
+                  }}
+                >
+                  <div>
+                    <h2 style={{ 
+                      fontFamily: 'Marcellus, serif',
+                      color: "#555555",
+                      transition: 'all 0.3s ease',
+                      margin: 0
+                    }}>INR {m.price?.sales?.toLocaleString()}</h2>
+                  </div>
+                  <div>
+                    <p style={{ 
                       fontFamily: 'DM Sans, sans-serif',
                       transition: 'all 0.3s ease',
-                      position: 'relative',
-                      overflow: 'hidden'
-                    }} 
-                    onClick={(e) => {
-                      e.stopPropagation(); // Prevent card click
-                      handleSelect(m);
-                    }}
-                    onTouchStart={(e) => {
-                      e.stopPropagation(); // Prevent card touch
-                      e.currentTarget.style.transform = 'scale(1.02)';
-                      e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
-                    }}
-                    onTouchEnd={(e) => {
-                      e.stopPropagation(); // Prevent card touch
-                      e.currentTarget.style.transform = 'scale(1)';
-                      e.currentTarget.style.boxShadow = 'none';
-                    }}
-                    disabled={isTakingMembership[m.id]}
-                  >
-                    {isTakingMembership[m.id] ? (
-                      <div className="button-spinner"></div>
-                    ) : (
-                      'Take Membership'
-                    )}
-                  </button>
+                      marginBottom: m.price?.sales === 15000 ? '0.5rem' : '1.5rem'
+                    }}>
+                      {m.price?.sales === 15000 ? (
+                        <>
+                          Peak Time Discount - 20%<br />
+                          Non-Peak Time Discount - 35%<br />
+                          Validity - {m.validity_in_months || 6} months
+                        </>
+                      ) : (
+                        <>
+                          Discount on services - {m.discount_percentage || 50}%<br className="d-xs-none d-lg-block" />
+                          Validity - {m.validity_in_months || 12} months
+                        </>
+                      )}
+                    </p>
+                  </div>
+                  <div>
+                    <button 
+                      className="select-location" 
+                      style={{ 
+                        fontFamily: 'DM Sans, sans-serif',
+                        transition: 'all 0.3s ease',
+                        position: 'relative',
+                        overflow: 'hidden',
+                        color: '#555555',
+                        marginTop: 'auto'
+                      }} 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleSelect(m);
+                      }}
+                      disabled={isTakingMembership[m.id]}
+                    >
+                      {isTakingMembership[m.id] ? (
+                        <div className="button-spinner"></div>
+                      ) : (
+                        'Take Membership'
+                      )}
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-          <button 
-            className="view-all-details-btn"
-            onClick={() => window.open('https://www.odespa.com/membership.html', '_blank')}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)';
-              e.currentTarget.style.boxShadow = '0 8px 20px rgba(85, 85, 85, 0.2)';
-              e.currentTarget.style.backgroundColor = '#b69564';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0) scale(1)';
-              e.currentTarget.style.boxShadow = '0 4px 12px rgba(85, 85, 85, 0.15)';
-              e.currentTarget.style.backgroundColor = '#555555';
-            }}
-            onTouchStart={(e) => {
-              e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)';
-              e.currentTarget.style.boxShadow = '0 8px 20px rgba(85, 85, 85, 0.2)';
-              e.currentTarget.style.backgroundColor = '#b69564';
-            }}
-            onTouchEnd={(e) => {
-              e.currentTarget.style.transform = 'translateY(0) scale(1)';
-              e.currentTarget.style.boxShadow = '0 4px 12px rgba(85, 85, 85, 0.15)';
-              e.currentTarget.style.backgroundColor = '#555555';
-            }}
-          >
-            View All Details
-          </button>
+              ))}
+            </div>
+          ) : (
+            <Slider {...settings}>
+              {memberships.map((m) => (
+                <div 
+                  className="service-style3 membership-type" 
+                  key={m.id}
+                  style={{
+                    transition: 'all 0.3s ease',
+                    cursor: 'pointer',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    margin: '0 16px',
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between'
+                  }}
+                  onClick={() => handleSelect(m)}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'scale(1.02)';
+                    e.currentTarget.style.boxShadow = '0 8px 16px rgba(0,0,0,0.1)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'scale(1)';
+                    e.currentTarget.style.boxShadow = 'none';
+                  }}
+                >
+                  <div>
+                    <h2 style={{ 
+                      fontFamily: 'Marcellus, serif',
+                      color: "#555555",
+                      transition: 'all 0.3s ease',
+                      margin: 0
+                    }}>INR {m.price?.sales?.toLocaleString()}</h2>
+                  </div>
+                  <div>
+                    <p style={{ 
+                      fontFamily: 'DM Sans, sans-serif',
+                      transition: 'all 0.3s ease',
+                      marginBottom: m.price?.sales === 15000 ? '0.5rem' : '1.5rem'
+                    }}>
+                      {m.price?.sales === 15000 ? (
+                        <>
+                          Peak Time Discount - 20%<br />
+                          Non-Peak Time Discount - 35%<br />
+                          Validity - {m.validity_in_months || 6} months
+                        </>
+                      ) : (
+                        <>
+                          Discount on services - {m.discount_percentage || 50}%<br className="d-xs-none d-lg-block" />
+                          Validity - {m.validity_in_months || 12} months
+                        </>
+                      )}
+                    </p>
+                  </div>
+                  <div>
+                    <button 
+                      className="select-location" 
+                      style={{ 
+                        fontFamily: 'DM Sans, sans-serif',
+                        transition: 'all 0.3s ease',
+                        position: 'relative',
+                        overflow: 'hidden',
+                        color: '#555555',
+                        marginTop: 'auto'
+                      }} 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleSelect(m);
+                      }}
+                      disabled={isTakingMembership[m.id]}
+                    >
+                      {isTakingMembership[m.id] ? (
+                        <div className="button-spinner"></div>
+                      ) : (
+                        'Take Membership'
+                      )}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </Slider>
+          )}
         </div>
       )}
 
-       {/* Payment Result Modal */}
-       {paymentResult && (
-        <div className="modern-modal">
-          <div className="modern-modal-card animate-modal-in" style={{maxWidth: 380, padding: '2.5rem 2rem 2rem 2rem', textAlign: 'center', position: 'relative'}}>
+      {/* Payment Result Modal */}
+      {paymentResult && (
+        <div className="modern-modal modern-payment-result-bg">
+          <div className="modern-modal-card modern-payment-result-card animate-modal-in" style={{maxWidth: 400, padding: '2.5rem 2rem 2rem 2rem', textAlign: 'center', position: 'relative', background: 'rgba(255,255,255,0.75)', boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.18)', backdropFilter: 'blur(12px)', borderRadius: '22px', border: '1.5px solid rgba(255,255,255,0.25)'}}>
             <span
               className="modern-modal-close"
               onClick={handleClosePaymentResult}
@@ -807,37 +909,65 @@ useEffect(() => {
               </>
             ) : (
               <>
-                <h2 style={{
-                  fontSize: '2rem',
-                  fontWeight: 700,
-                  color: '#ff4d4f',
-                  marginBottom: '1.2rem',
-                  letterSpacing: '0.01em',
-                }}>Payment Failed</h2>
+                <div style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  marginBottom: '1.5rem',
+                }}>
+                  <div style={{
+                    background: 'rgba(255, 77, 79, 0.12)',
+                    borderRadius: '50%',
+                    width: 70,
+                    height: 70,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginBottom: 18,
+                    boxShadow: '0 2px 12px 0 rgba(255,77,79,0.10)'
+                  }}>
+                    <svg width="38" height="38" viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <circle cx="19" cy="19" r="19" fill="#ff4d4f" fillOpacity="0.18"/>
+                      <path d="M13.5 13.5L24.5 24.5M24.5 13.5L13.5 24.5" stroke="#ff4d4f" strokeWidth="2.5" strokeLinecap="round"/>
+                    </svg>
+                  </div>
+                  <h2 style={{
+                    fontSize: '2rem',
+                    fontWeight: 700,
+                    color: '#ff4d4f',
+                    marginBottom: '0.7rem',
+                    letterSpacing: '0.01em',
+                    fontFamily: 'Marcellus, serif',
+                  }}>Payment Failed</h2>
+                </div>
                 {paymentResult.error_message && (
                   <div style={{
                     color: '#ff4d4f',
-                    background: '#fff0f0',
-                    borderRadius: 8,
-                    padding: '0.8rem 1rem',
-                    margin: '1.2rem 0',
-                    fontSize: '1.05rem',
+                    background: 'rgba(255,77,79,0.08)',
+                    borderRadius: 12,
+                    padding: '1rem 1.2rem',
+                    margin: '0 0 1.2rem 0',
+                    fontSize: '1.08rem',
                     fontWeight: 500,
+                    boxShadow: '0 1px 6px 0 rgba(255,77,79,0.07)',
+                    fontFamily: 'DM Sans, sans-serif',
                   }}>{capitalizeFirstLetter(paymentResult.error_message)}</div>
                 )}
+                <div style={{color: '#b69348', fontSize: '1rem', marginTop: 8, fontFamily: 'DM Sans, sans-serif'}}>
+                  If you need help, please contact our support team.
+                </div>
               </>
             )}
           </div>
         </div>
       )}
 
-      {/* User Details/OTP Modal (unchanged) */}
+      {/* User Details/OTP Modal */}
       {showOTPModal && guestInfo && (
         <div className="modern-modal">
           <div className="modern-modal-card animate-modal-in">
             <div className="modern-modal-header">
-              
-              <h2 style={{ fontFamily: 'Marcellus, serif' ,color:"#555555" }}>User Details</h2>
+              <h2 style={{ fontFamily: 'Marcellus, serif', color: "#555555" }}>User Details</h2>
               <span className="modern-modal-close" onClick={handleCloseModal}>&#10006;</span>
             </div>
             <div className="modern-modal-details" style={{ fontFamily: 'DM Sans, sans-serif' }}>
@@ -863,12 +993,14 @@ useEffect(() => {
           </div>
         </div>
       )}
+
+      {/* OTP Verification Modal */}
       {showOTPModal && !guestInfo && (step === 1 || (step === 2 && !otpVerified) || (otpVerified && showGuestForm && !guestInfo)) && (
         <div className="modern-modal">
           <div className="modern-modal-card animate-modal-in">
             {step === 1 && (
               <>
-                <div className="modern-modal-header" style={{ fontFamily: 'Marcellus, serif' ,color:'#555555' }}>
+                <div className="modern-modal-header" style={{ fontFamily: 'Marcellus, serif', color: '#555555' }}>
                   <h2>Enter Mobile Number</h2>
                   <span className="modern-modal-close" onClick={handleCloseModal}>&#10006;</span>
                 </div>
@@ -948,11 +1080,11 @@ useEffect(() => {
             )}
             {step === 2 && !otpVerified && (
               <>
-                <div className="modern-modal-header" >
+                <div className="modern-modal-header">
                   <button className="modern-modal-back-icon-btn" onClick={() => setStep(1)} aria-label="Back" style={{margin: 0}}>
-                  <FiArrowLeft className="arrow-icon-1" />
+                    <FiArrowLeft className="arrow-icon-1" />
                   </button>
-                  <h2 style={{textAlign: 'center',fontFamily: 'Marcellus, serif' ,color:'#555555'}}>OTP Verification</h2>
+                  <h2 style={{textAlign: 'center', fontFamily: 'Marcellus, serif', color: '#555555'}}>OTP Verification</h2>
                   <span className="modern-modal-close" onClick={handleCloseModal}>&#10006;</span>
                 </div>
                 <div className="modern-modal-details">
@@ -964,25 +1096,26 @@ useEffect(() => {
                     onChange={(e) => setOtp(e.target.value)}
                     onKeyPress={(e) => handleKeyPress(e, () => otp.length === 6 && !isVerifyingOtp && verifyOtp())}
                     maxLength={6}
-                    style={{marginBottom: '1.2rem'}} />
+                    style={{marginBottom: '1.2rem'}} 
+                  />
                 </div>
-                  <button 
-                    className="modern-modal-confirm" 
-                    onClick={verifyOtp} 
-                    disabled={otp.length !== 6 || isVerifyingOtp}
-                    style={{ fontFamily: 'DM Sans, sans-serif' }}
-                  >
-                    {isVerifyingOtp ? (
-                      <div className="button-spinner"></div>
-                    ) : (
-                      'Continue'
-                    )}
-                  </button>
+                <button 
+                  className="modern-modal-confirm" 
+                  onClick={verifyOtp} 
+                  disabled={otp.length !== 6 || isVerifyingOtp}
+                  style={{ fontFamily: 'DM Sans, sans-serif' }}
+                >
+                  {isVerifyingOtp ? (
+                    <div className="button-spinner"></div>
+                  ) : (
+                    'Continue'
+                  )}
+                </button>
               </>
             )}
             {otpVerified && showGuestForm && !guestInfo && (
               <>
-                <div className="modern-modal-header" style={{ fontFamily: 'Marcellus, serif' ,color:'#555555' }}>
+                <div className="modern-modal-header" style={{ fontFamily: 'Marcellus, serif', color: '#555555' }}>
                   <h2>Create Account</h2>
                   <span className="modern-modal-close" onClick={handleCloseModal}>&#10006;</span>
                 </div>
@@ -992,13 +1125,15 @@ useEffect(() => {
                     placeholder="First Name"
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
-                    onKeyPress={(e) => handleKeyPress(e, () => firstName && lastName && gender && createGuest())} />
+                    onKeyPress={(e) => handleKeyPress(e, () => firstName && lastName && gender && createGuest())} 
+                  />
                   <input
                     className="modern-modal-input"
                     placeholder="Last Name"
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
-                    onKeyPress={(e) => handleKeyPress(e, () => firstName && lastName && gender && createGuest())} />
+                    onKeyPress={(e) => handleKeyPress(e, () => firstName && lastName && gender && createGuest())} 
+                  />
                   <div style={{marginBottom: '1.2rem'}}>
                     <label style={{marginRight: '1.5rem'}}>
                       <input
@@ -1040,4 +1175,4 @@ useEffect(() => {
   );
 };
 
-export default App;
+export default App
